@@ -1,0 +1,145 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Usuario {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  senha     String
+  nome      String
+  cpf       String   @unique
+  telefone  String?
+  bairro    String?
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  denuncias       Denuncia[]
+  comentarios     Comentario[]
+  avaliacoes      Avaliacao[]
+
+  @@map("usuarios")
+}
+
+model Obra {
+  id                String   @id @default(uuid())
+  titulo            String
+  descricao         String   @db.Text
+  fingerprint       String?  @unique
+  tipo              String   // "Asfaltamento", "Drenagem", "Construção", "Iluminação", etc
+  
+  // Localização - PostGIS
+  latitude          Float
+  longitude         Float
+  endereco          String
+  bairro            String   // "ARSE 12", "104 Sul", "Aureny III", "Taquaralto"
+  
+  // Status e cronograma
+  status            String   @default("PLANEJADA") // PLANEJADA, EM_EXECUCAO, PAUSADA, CONCLUIDA
+  dataInicio        DateTime?
+  dataFimPrevista   DateTime?
+  dataFimReal       DateTime?
+  
+  // Progresso
+  percentualProgresso Int @default(0)
+  orcamentoEstimado Float?
+  
+  // Metadados
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  atualizacoes      AtualizacaoObra[]
+  denuncias         Denuncia[]
+  comentarios       Comentario[]
+  avaliacoes        Avaliacao[]
+
+  @@index([latitude, longitude])
+  @@index([bairro])
+  @@index([status])
+  @@index([fingerprint])
+  @@map("obras")
+}
+
+model AtualizacaoObra {
+  id        String   @id @default(uuid())
+  obraId    String
+  obra      Obra     @relation(fields: [obraId], references: [id], onDelete: Cascade)
+  
+  descricao String   @db.Text
+  novoStatus String?
+  novoPercentual Int?
+  
+  createdAt DateTime @default(now())
+
+  @@index([obraId])
+  @@index([createdAt])
+  @@map("atualizacoes_obra")
+}
+
+model Denuncia {
+  id        String   @id @default(uuid())
+  usuarioId String
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  
+  obraId    String
+  obra      Obra     @relation(fields: [obraId], references: [id], onDelete: Cascade)
+  
+  titulo    String
+  descricao String   @db.Text
+  tipo      String   // "ATRASO", "QUALIDADE", "SEGURANCA", "OUTRO"
+  
+  imagemUrl String?
+  status    String   @default("ABERTA") // ABERTA, EM_ANALISE, RESOLVIDA, REJEITADA
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([obraId])
+  @@index([usuarioId])
+  @@index([status])
+  @@map("denuncias")
+}
+
+model Comentario {
+  id        String   @id @default(uuid())
+  usuarioId String
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  
+  obraId    String
+  obra      Obra     @relation(fields: [obraId], references: [id], onDelete: Cascade)
+  
+  conteudo  String   @db.Text
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([obraId])
+  @@index([usuarioId])
+  @@map("comentarios")
+}
+
+model Avaliacao {
+  id        String   @id @default(uuid())
+  usuarioId String
+  usuario   Usuario  @relation(fields: [usuarioId], references: [id], onDelete: Cascade)
+  
+  obraId    String
+  obra      Obra     @relation(fields: [obraId], references: [id], onDelete: Cascade)
+  
+  nota      Int      // 1 a 5
+  comentario String? @db.Text
+  
+  createdAt DateTime @default(now())
+
+  @@index([obraId])
+  @@index([usuarioId])
+  @@map("avaliacoes")
+}
