@@ -71,7 +71,7 @@ export class UsuarioRepository implements IUsuarioRepository {
 
   async buscarTodos(): Promise<Usuario[]> {
     const usuarios = await this.prisma.usuario.findMany();
-    return usuarios.map((u) => {
+    return usuarios.map((u: any) => {
       const domain = this.toDomain(u);
       // Remover senhaHash do resultado
       const { senhaHash, ...usuario } = domain;

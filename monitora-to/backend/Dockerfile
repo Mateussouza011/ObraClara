@@ -6,7 +6,8 @@ WORKDIR /app
 RUN apk add --no-cache \
     python3 \
     make \
-    g++
+    g++ \
+    openssl
 
 # Copiar arquivos de dependências
 COPY package*.json ./

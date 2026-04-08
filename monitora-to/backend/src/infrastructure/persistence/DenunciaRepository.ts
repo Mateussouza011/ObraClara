@@ -42,7 +42,7 @@ export class DenunciaRepository implements IDenunciaRepository {
       orderBy: { createdAt: 'desc' },
     });
 
-    return denuncias.map((d) => this.toDomain(d));
+    return denuncias.map((d: any) => this.toDomain(d));
   }
 
   async buscarPorUsuario(usuarioId: string): Promise<Denuncia[]> {
@@ -51,7 +51,7 @@ export class DenunciaRepository implements IDenunciaRepository {
       orderBy: { createdAt: 'desc' },
     });
 
-    return denuncias.map((d) => this.toDomain(d));
+    return denuncias.map((d: any) => this.toDomain(d));
   }
 
   async buscarAberta(): Promise<Denuncia[]> {
@@ -60,7 +60,7 @@ export class DenunciaRepository implements IDenunciaRepository {
       orderBy: { createdAt: 'asc' },
     });
 
-    return denuncias.map((d) => this.toDomain(d));
+    return denuncias.map((d: any) => this.toDomain(d));
   }
 
   async atualizar(denuncia: Denuncia): Promise<void> {

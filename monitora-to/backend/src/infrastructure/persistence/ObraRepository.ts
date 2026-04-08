@@ -46,7 +46,7 @@ export class ObraRepository implements IObraRepository {
 
   async buscarTodas(): Promise<Obra[]> {
     const obras = await this.prisma.obra.findMany();
-    return obras.map((obra) => this.toDomain(obra));
+    return obras.map((obra: any) => this.toDomain(obra));
   }
 
   async buscarAtivasPaginadas(params: {
@@ -72,7 +72,7 @@ export class ObraRepository implements IObraRepository {
     ]);
 
     return {
-      obras: obras.map((obra) => this.toDomain(obra)),
+      obras: obras.map((obra: any) => this.toDomain(obra)),
       total,
     };
   }
@@ -81,7 +81,7 @@ export class ObraRepository implements IObraRepository {
     const obras = await this.prisma.obra.findMany({
       where: { bairro },
     });
-    return obras.map((obra) => this.toDomain(obra));
+    return obras.map((obra: any) => this.toDomain(obra));
   }
 
   async buscarProximas(latitude: number, longitude: number, raioKm: number): Promise<Obra[]> {
