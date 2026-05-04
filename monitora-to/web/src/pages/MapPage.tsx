@@ -44,6 +44,48 @@ export function MapPage() {
   return (
     <Layout>
       <div className="map-page">
+        <div className="filter-bar">
+          <div className="filter-item filter-slider-container">
+            <label htmlFor="raio-slider">Raio de Busca</label>
+            <div className="slider-controls">
+              <input
+                id="raio-slider"
+                type="range"
+                min={1}
+                max={TOCANTINS_WIDE_RADIUS_KM}
+                step={1}
+                value={raioFiltro}
+                onChange={(e) => setRaioFiltro(Number(e.target.value))}
+                className="raio-slider"
+              />
+              <span className="raio-value-badge">
+                {raioFiltro >= TOCANTINS_WIDE_RADIUS_KM ? 'Todo o TO' : `${raioFiltro} km`}
+              </span>
+            </div>
+          </div>
+
+          <div className="filter-separator" />
+
+          <div className="filter-item">
+            <label htmlFor="sort-select">Ordenar por</label>
+            <select
+              id="sort-select"
+              value={ordenacao}
+              onChange={(e) => setOrdenacao(e.target.value as 'distancia' | 'titulo')}
+            >
+              <option value="distancia">Proximidade</option>
+              <option value="titulo">Ordem Alfabética</option>
+            </select>
+          </div>
+
+          <div className="filter-separator" />
+
+          <div className="filter-stats">
+            <span className="stats-number">{obrasNoRaioAtual.length}</span>
+            <span className="stats-label">Obras encontradas</span>
+          </div>
+        </div>
+
         <div className="map-section">
           {localizacao && (
             <MapComponent
@@ -59,56 +101,12 @@ export function MapPage() {
 
         <div className="sidebar">
           <div className="sidebar-header">
-            <h2>Obras Próximas</h2>
-            <p className="sidebar-subtitle">
-              {obrasNoRaioAtual.length} obra{obrasNoRaioAtual.length !== 1 ? 's' : ''} encontrada
-              {obrasNoRaioAtual.length !== 1 ? 's' : ''}
-            </p>
-          </div>
-
-          <div className="filters">
-            <div className="filter-group">
-              <label htmlFor="raio-slider">Raio (km)</label>
-              <input
-                id="raio-slider"
-                type="range"
-                min={1}
-                max={TOCANTINS_WIDE_RADIUS_KM}
-                step={1}
-                value={raioFiltro}
-                onChange={(e) => setRaioFiltro(Number(e.target.value))}
-                className="raio-slider"
-              />
-              <div className="raio-slider-marks" aria-hidden="true">
-                <span>1 km</span>
-                <span>Todo o TO</span>
-              </div>
-              <div className="raio-slider-value" aria-live="polite">
-                <span className="raio-slider-label">Raio atual</span>
-                <span className="raio-slider-number">
-                  {raioFiltro >= TOCANTINS_WIDE_RADIUS_KM
-                    ? 'Todo o TO'
-                    : `${raioFiltro} km`}
-                </span>
-              </div>
-            </div>
-
-            <div className="filter-group">
-              <label>Ordenar por</label>
-              <select
-                value={ordenacao}
-                onChange={(e) =>
-                  setOrdenacao(e.target.value as 'distancia' | 'titulo')
-                }
-              >
-                <option value="distancia">Distância</option>
-                <option value="titulo">Título</option>
-              </select>
-            </div>
+            <h2>Lista de Obras</h2>
+            <p className="sidebar-subtitle">Tocantins em Foco</p>
           </div>
 
           {error && <div className="error-message">{error}</div>}
-          {loading && <div className="loading-message">Carregando...</div>}
+          {loading && <div className="loading-message">Atualizando dados...</div>}
 
           <div className="obras-list">
             {obrasNoRaioAtual.map((obra) => (

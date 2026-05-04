@@ -13,6 +13,25 @@ interface MapComponentProps {
   onObraSelect?: (obra: Obra) => void;
 }
 
+function UpdateMapBounds({ userLocation, raioKm }: { userLocation: { latitude: number; longitude: number }; raioKm: number }) {
+  const map = useMap();
+
+  useEffect(() => {
+    if (!userLocation) return;
+
+    // Calcula o zoom ideal baseado no raio (aproximação logarítmica)
+    // 1km -> ~15, 10km -> ~12, 100km -> ~9, 900km -> ~6
+    const zoom = Math.max(5, Math.min(16, 14 - Math.log2(raioKm)));
+    
+    map.setView([userLocation.latitude, userLocation.longitude], zoom, {
+      animate: true,
+      duration: 1,
+    });
+  }, [map, userLocation, raioKm]);
+
+  return null;
+}
+
 function FocusObraOnMap({
   selectedObraId,
   obras,
@@ -57,6 +76,7 @@ export function MapComponent({
 
   return (
     <MapContainer center={center} zoom={13} className="map-container">
+      <UpdateMapBounds userLocation={userLocation} raioKm={raioKm} />
       <FocusObraOnMap selectedObraId={selectedObraId} obras={obras} />
 
       <TileLayer
