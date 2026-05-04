@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=Source+Sans+3:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
 
 * {
   margin: 0;
@@ -7,20 +7,40 @@
 }
 
 :root {
-  --bg-base: #f3f7f8;
-  --bg-soft: #e8f0f3;
-  --ink-strong: #122027;
-  --ink: #27414d;
-  --muted: #5f7480;
-  --line: #d1dce1;
-  --primary: #0b6e84;
-  --primary-strong: #084f60;
+  /* Modern Premium Palette */
+  --bg-base: #f8fafc;
+  --bg-soft: #f1f5f9;
+  --ink-strong: #0f172a;
+  --ink: #334155;
+  --muted: #64748b;
+  --line: #e2e8f0;
+  
+  /* Vibrant Accents */
+  --primary: #0ea5e9; /* Sky Blue */
+  --primary-strong: #0284c7;
+  --primary-light: #e0f2fe;
+  
+  --secondary: #10b981; /* Emerald */
+  --secondary-strong: #059669;
+  
   --accent: #f59e0b;
-  --success: #0f9f6f;
-  --danger: #d14747;
+  --success: #10b981;
+  --danger: #ef4444;
+  
   --surface: #ffffff;
-  --shadow-sm: 0 6px 16px rgba(10, 40, 53, 0.08);
-  --shadow-md: 0 14px 28px rgba(10, 40, 53, 0.14);
+  --surface-glass: rgba(255, 255, 255, 0.85);
+  
+  /* Refined Shadows */
+  --shadow-sm: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
+  --shadow-md: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.05);
+  --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+  --shadow-glass: 0 8px 32px 0 rgba(31, 38, 135, 0.07);
+  
+  /* Radii */
+  --radius-sm: 0.5rem;
+  --radius-md: 1rem;
+  --radius-lg: 1.5rem;
+  --radius-full: 9999px;
 }
 
 html,
@@ -31,14 +51,17 @@ body,
 }
 
 body {
-  font-family: 'Source Sans 3', 'Segoe UI', sans-serif;
+  font-family: 'Inter', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   color: var(--ink);
-  background:
-    radial-gradient(circle at 85% 15%, rgba(11, 110, 132, 0.15), transparent 32%),
-    radial-gradient(circle at 8% 92%, rgba(245, 158, 11, 0.12), transparent 28%),
-    linear-gradient(180deg, var(--bg-soft) 0%, var(--bg-base) 52%, #eef4f6 100%);
+  background-color: var(--bg-base);
+  /* Subtle mesh gradient background */
+  background-image: 
+    radial-gradient(at 0% 0%, hsla(199,100%,94%,1) 0, transparent 50%), 
+    radial-gradient(at 100% 0%, hsla(160,100%,94%,1) 0, transparent 50%),
+    radial-gradient(at 100% 100%, hsla(210,100%,96%,1) 0, transparent 50%);
+  background-attachment: fixed;
 }
 
 a {
@@ -49,7 +72,7 @@ a {
 button {
   cursor: pointer;
   border: none;
-  font-family: 'Space Grotesk', 'Source Sans 3', sans-serif;
+  font-family: 'Outfit', sans-serif;
 }
 
 input,
@@ -62,26 +85,28 @@ h1,
 h2,
 h3,
 h4 {
-  font-family: 'Space Grotesk', 'Source Sans 3', sans-serif;
-  letter-spacing: -0.02em;
+  font-family: 'Outfit', sans-serif;
+  letter-spacing: -0.03em;
   color: var(--ink-strong);
 }
 
+/* Custom Scrollbar */
 *::-webkit-scrollbar {
-  width: 10px;
+  width: 8px;
+  height: 8px;
 }
 
 *::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.04);
+  background: transparent;
 }
 
 *::-webkit-scrollbar-thumb {
-  background: rgba(11, 110, 132, 0.35);
-  border-radius: 999px;
+  background: var(--line);
+  border-radius: var(--radius-full);
 }
 
 *::-webkit-scrollbar-thumb:hover {
-  background: rgba(11, 110, 132, 0.55);
+  background: var(--muted);
 }
 
 /* Leaflet Overrides */
@@ -100,8 +125,9 @@ h4 {
 }
 
 .leaflet-popup-content-wrapper {
-  border-radius: 12px;
-  box-shadow: var(--shadow-sm);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-md);
+  border: 1px solid var(--line);
 }
 
 .leaflet-popup-tip {
@@ -115,20 +141,22 @@ h4 {
   align-items: center;
   width: 100%;
   height: 100vh;
-  background: linear-gradient(130deg, #074f62 0%, #0b6e84 60%, #13a4a2 100%);
+  background: linear-gradient(135deg, var(--bg-base) 0%, var(--primary-light) 100%);
 }
 
 .loading-spinner {
-  color: white;
-  font-size: 1.5rem;
-  animation: pulse 1.5s ease-in-out infinite;
+  color: var(--primary);
+  font-size: 2rem;
+  animation: pulse 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 }
 
 @keyframes pulse {
   0%, 100% {
     opacity: 1;
+    transform: scale(1);
   }
   50% {
-    opacity: 0.5;
+    opacity: 0.7;
+    transform: scale(0.95);
   }
 }

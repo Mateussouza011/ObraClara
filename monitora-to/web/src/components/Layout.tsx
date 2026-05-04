@@ -12,7 +12,7 @@ export function Layout({ children }: LayoutProps) {
       <nav className="navbar">
         <div className="navbar-container">
           <Link to="/" className="navbar-brand">
-            📍 Monitora TO
+            <span className="brand-icon">📍</span> Monitora TO
           </Link>
           <ul className="navbar-menu">
             <li>

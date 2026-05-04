@@ -1,99 +1,25 @@
 import React, { useState } from 'react';
-import { useDenunciaViewModel } from '../hooks';
 import { Layout } from '../components';
-import { DenunciaTipoEnum } from '../models';
+import { 
+  CANAIS_FEDERAIS, 
+  CANAIS_ESTADUAIS, 
+  CIDADES_TO, 
+  getCanalMunicipal,
+  type CanalDenuncia 
+} from '../models';
 import './DenunciasPage.css';
 
 const DenunciasPage: React.FC = () => {
-  const viewModel = useDenunciaViewModel();
+  const [nivelObra, setNivelObra] = useState<string>('');
+  const [cidadeSelecionada, setCidadeSelecionada] = useState<string>('');
 
-  const [showForm, setShowForm] = useState(false);
-  const [formData, setFormData] = useState({
-    titulo: '',
-    descricao: '',
-    tipo: DenunciaTipoEnum.ATRASO,
-  });
-
-  React.useEffect(() => {
-    viewModel.carregarDenuncias();
-  }, []);
-
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({
-      ...prev,
-      [name]: value,
-    }));
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-
-    try {
-      await viewModel.criarDenuncia({
-        titulo: formData.titulo,
-        descricao: formData.descricao,
-        tipo: formData.tipo,
-        obraId: 'obra-1',
-        usuarioId: 'usuario-web',
-      });
-
-      // Limpar formulário
-      setFormData({
-        titulo: '',
-        descricao: '',
-        tipo: DenunciaTipoEnum.ATRASO,
-      });
-      setShowForm(false);
-
-      // Recarregar denúncias
-      await viewModel.carregarDenuncias();
-    } catch (err) {
-      console.error('Erro ao criar denúncia:', err);
+  const getCanal = (): CanalDenuncia[] => {
+    if (nivelObra === 'FEDERAL') return CANAIS_FEDERAIS;
+    if (nivelObra === 'ESTADUAL') return CANAIS_ESTADUAIS;
+    if (nivelObra === 'MUNICIPAL' && cidadeSelecionada) {
+      return [getCanalMunicipal(cidadeSelecionada)];
     }
-  };
-
-  const getTipoLabel = (tipo: DenunciaTipoEnum): string => {
-    switch (tipo) {
-      case DenunciaTipoEnum.ATRASO:
-        return '⏱️ Atraso';
-      case DenunciaTipoEnum.QUALIDADE:
-        return '⚠️ Qualidade';
-      case DenunciaTipoEnum.SEGURANCA:
-        return '🛡️ Segurança';
-      case DenunciaTipoEnum.OUTRO:
-        return '📌 Outro';
-      default:
-        return tipo;
-    }
-  };
-
-  const getTipoClass = (tipo: DenunciaTipoEnum): string => {
-    switch (tipo) {
-      case DenunciaTipoEnum.ATRASO:
-        return 'atraso';
-      case DenunciaTipoEnum.QUALIDADE:
-        return 'qualidade';
-      case DenunciaTipoEnum.SEGURANCA:
-        return 'seguranca';
-      default:
-        return 'outro';
-    }
-  };
-
-  const getStatusClass = (status: string): string => {
-    switch (status) {
-      case 'ABERTA':
-        return 'aberta';
-      case 'EM_ANALISE':
-        return 'em-analise';
-      case 'RESOLVIDA':
-        return 'resolvido';
-      case 'REJEITADA':
-        return 'rejeitada';
-      default:
-        return 'aberta';
-    }
+    return [];
   };
 
   return (
@@ -101,133 +27,79 @@ const DenunciasPage: React.FC = () => {
       <div className="denuncias-page">
         <div className="denuncias-header">
           <div className="header-content">
-            <h1>Denúncias</h1>
-            <p>Reporte problemas e acompanhe o status das denúncias</p>
+            <h1>Canais de Denúncia</h1>
+            <p>Selecione a esfera da obra e encontre o canal oficial para realizar sua manifestação</p>
           </div>
-          <button
-            className="new-denuncia-button"
-            onClick={() => setShowForm(!showForm)}
-          >
-            {showForm ? '✕ Cancelar' : '+ Nova Denúncia'}
-          </button>
         </div>
 
-        {showForm && (
-          <form className="denuncia-form" onSubmit={handleSubmit}>
-            <div className="form-group">
-              <label htmlFor="titulo">Título *</label>
-              <input
-                id="titulo"
-                type="text"
-                name="titulo"
-                value={formData.titulo}
-                onChange={handleChange}
-                placeholder="Descreva o problema de forma concisa"
-                disabled={viewModel.loading}
-                required
-              />
-              {formData.titulo.length > 0 && (
-                <span className="char-count">{formData.titulo.length}/100</span>
-              )}
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="descricao">Descrição Detalhada *</label>
-              <textarea
-                id="descricao"
-                name="descricao"
-                value={formData.descricao}
-                onChange={handleChange}
-                placeholder="Forneça detalhes sobre o problema encontrado"
-                rows={5}
-                disabled={viewModel.loading}
-                required
-              />
-              {formData.descricao.length > 0 && (
-                <span className="char-count">{formData.descricao.length}/500</span>
-              )}
-            </div>
-
-            <div className="form-group">
-              <label htmlFor="tipo">Tipo de Denúncia *</label>
-              <select
-                id="tipo"
-                name="tipo"
-                value={formData.tipo}
-                onChange={handleChange}
-                disabled={viewModel.loading}
-                required
-              >
-                <option value={DenunciaTipoEnum.ATRASO}>⏱️ Atraso na obra</option>
-                <option value={DenunciaTipoEnum.QUALIDADE}>⚠️ Problemas de qualidade</option>
-                <option value={DenunciaTipoEnum.SEGURANCA}>🛡️ Problemas de segurança</option>
-                <option value={DenunciaTipoEnum.OUTRO}>📌 Outro</option>
-              </select>
-            </div>
-
-            {viewModel.error && (
-              <div className="error-message">{viewModel.error}</div>
-            )}
-
-            <button
-              type="submit"
-              className="submit-button"
-              disabled={viewModel.loading}
-            >
-              {viewModel.loading ? 'Enviando...' : 'Enviar Denúncia'}
-            </button>
-          </form>
-        )}
-
-        {viewModel.sucesso && (
-          <div className="success-message">
-            ✓ Denúncia criada com sucesso!
-          </div>
-        )}
-
-        <div className="denuncias-list">
-          {viewModel.loading && viewModel.denuncias.length === 0 && (
-            <div className="loading-state">Carregando denúncias...</div>
-          )}
-
-          {!viewModel.loading && viewModel.denuncias.length === 0 && (
-            <div className="empty-state">
-              <p>Nenhuma denúncia registrada ainda.</p>
-              <p>Clique em "Nova Denúncia" para denunciar um problema.</p>
-            </div>
-          )}
-
-          {viewModel.denuncias.map((denuncia) => (
-            <div key={denuncia.id} className="denuncia-card">
-              <div className="denuncia-header-card">
-                <div className="denuncia-title-section">
-                  <h3>{denuncia.titulo}</h3>
-                  <span className={`tipo-badge tipo-${getTipoClass(denuncia.tipo)}`}>
-                    {getTipoLabel(denuncia.tipo)}
-                  </span>
+        <section className="selection-wizard">
+          <div className="wizard-card">
+            <h2>Onde a obra está localizada?</h2>
+            <p className="wizard-subtitle">Para direcionar sua denúncia ao órgão de controle correto, selecione a esfera governamental responsável pela obra.</p>
+            
+            <div className="wizard-controls">
+              <div className="wizard-form-group">
+                <label htmlFor="nivel-obra">Esfera Governamental</label>
+                <div className="select-wrapper">
+                  <select 
+                    id="nivel-obra" 
+                    value={nivelObra} 
+                    onChange={(e) => {
+                      setNivelObra(e.target.value);
+                      setCidadeSelecionada('');
+                    }}
+                  >
+                    <option value="">Selecione a esfera...</option>
+                    <option value="FEDERAL">🏛️ Federal (Obras da União)</option>
+                    <option value="ESTADUAL">🏞️ Estadual (Obras do Tocantins)</option>
+                    <option value="MUNICIPAL">🏘️ Municipal (Prefeituras)</option>
+                  </select>
                 </div>
-                <span className={`status-badge status-${getStatusClass(denuncia.status)}`}>
-                  {denuncia.status}
-                </span>
               </div>
 
-              <p className="denuncia-description">{denuncia.descricao}</p>
-
-              <div className="denuncia-meta">
-                <span className="meta-item">
-                  <strong>Data:</strong> {new Date(denuncia.createdAt).toLocaleDateString('pt-BR')}
-                </span>
-                <span className="meta-item">
-                  <strong>ID:</strong> #{denuncia.id.substring(0, 8)}
-                </span>
-              </div>
-
-              <div className="denuncia-actions">
-                <button className="action-button view">👁️ Ver Detalhes</button>
-                <button className="action-button follow">🔔 Acompanhar</button>
-              </div>
+              {nivelObra === 'MUNICIPAL' && (
+                <div className="wizard-form-group animate-in">
+                  <label htmlFor="cidade-obra">Cidade do Tocantins</label>
+                  <div className="select-wrapper">
+                    <select 
+                      id="cidade-obra" 
+                      value={cidadeSelecionada} 
+                      onChange={(e) => setCidadeSelecionada(e.target.value)}
+                    >
+                      <option value="">Selecione a cidade...</option>
+                      {CIDADES_TO.map(cidade => (
+                        <option key={cidade} value={cidade}>{cidade}</option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+              )}
             </div>
-          ))}
+
+            {getCanal().length > 0 && (
+              <div className="results-section animate-in">
+                <h3>Canais de Denúncia Oficiais</h3>
+                <div className="canal-cards">
+                  {getCanal().map((canal, index) => (
+                    <div key={index} className="canal-card-item">
+                      <div className="canal-icon">📢</div>
+                      <div className="canal-info">
+                        <h4>{canal.nome}</h4>
+                        <p>{canal.descricao}</p>
+                      </div>
+                      <a href={canal.link} target="_blank" rel="noopener noreferrer" className="canal-link-button">
+                        Acessar Canal Oficial ↗
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </section>
+
+        <div className="denuncias-info-footer">
+          <p>As denúncias são ferramentas fundamentais de controle social. Ao utilizar os canais oficiais, você garante que sua manifestação seja apurada pelos órgãos competentes.</p>
         </div>
       </div>
     </Layout>

@@ -3,6 +3,7 @@
  */
 
 export * from './Obra';
+export * from './CanaisDenuncia';
 export {
 	DenunciaStatusEnum,
 	DenunciaTipoEnum,
