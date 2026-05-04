@@ -10,29 +10,25 @@ export enum ObraStatusEnum {
   CONCLUIDA = 'CONCLUIDA',
 }
 
-export enum ObraTipoEnum {
-  ASFALTAMENTO = 'Asfaltamento',
-  DRENAGEM = 'Drenagem',
-  CONSTRUCAO = 'Construção',
-  ILUMINACAO = 'Iluminação',
-  SANEAMENTO = 'Saneamento',
-}
+export type ObraEsfera = 'Federal' | 'Estadual' | 'Municipal';
 
 export interface Obra {
   id: string;
   titulo: string;
   descricao: string;
-  tipo: ObraTipoEnum;
+  tipo: string;
   latitude: number;
   longitude: number;
   endereco: string;
   bairro: string;
   status: ObraStatusEnum;
+  esfera: ObraEsfera;
+  fonteUrl: string;
   dataInicio?: Date;
   dataFimPrevista?: Date;
   dataFimReal?: Date;
-  percentualProgresso: number;
-  orcamentoEstimado?: number;
+  valorInvestimento?: number;
+  executor?: string;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -48,6 +44,10 @@ export interface ObraResponseDTO {
   bairro: string;
   status: string;
   percentualProgresso: number;
+  esfera?: string;
+  fonteUrl?: string;
+  valorInvestimento?: number;
+  executor?: string;
   createdAt: string;
   updatedAt: string;
 }
@@ -83,8 +83,15 @@ export function statusLabel(status: ObraStatusEnum): string {
   }
 }
 
-export function progressColor(progress: number): string {
-  if (progress < 30) return '#EF4444';
-  if (progress < 70) return '#F97316';
-  return '#10B981';
+export function esferaColor(esfera: ObraEsfera): string {
+  switch (esfera) {
+    case 'Federal':
+      return '#2563EB';
+    case 'Estadual':
+      return '#059669';
+    case 'Municipal':
+      return '#D97706';
+    default:
+      return '#6B7280';
+  }
 }

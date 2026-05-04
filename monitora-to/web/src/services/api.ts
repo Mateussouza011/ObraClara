@@ -10,8 +10,7 @@ import axios, {
   AxiosResponse,
   InternalAxiosRequestConfig,
 } from 'axios';
-import { Obra, ObraResponseDTO, ObraStatusEnum, ObraTipoEnum } from '@models/Obra';
-import { Denuncia, CriarDenunciaDTO } from '@models/Denuncia';
+import { Obra, ObraResponseDTO, ObraStatusEnum, ObraEsfera } from '@models/Obra';
 
 const rawApiUrl = import.meta.env.VITE_API_URL || 'http://localhost:3000';
 const API_BASE_URL = rawApiUrl.endsWith('/api')
@@ -26,34 +25,6 @@ interface ApiResponse<T> {
 }
 
 const TOCANTINS_DEFAULT_COORDS = { latitude: -10.184, longitude: -48.3336 };
-
-const TOCANTINS_COORDS_BY_NAME: Record<string, { latitude: number; longitude: number }> = {
-  palmas: { latitude: -10.184, longitude: -48.3336 },
-  araguaina: { latitude: -7.1926, longitude: -48.2044 },
-  gurupi: { latitude: -11.7279, longitude: -49.068 },
-  'porto nacional': { latitude: -10.7081, longitude: -48.4172 },
-  'paraiso do tocantins': { latitude: -10.1753, longitude: -48.8822 },
-  'colinas do tocantins': { latitude: -8.0576, longitude: -48.4757 },
-  'guarai': { latitude: -8.8354, longitude: -48.5114 },
-  dianopolis: { latitude: -11.6237, longitude: -46.8198 },
-  araguatins: { latitude: -5.6466, longitude: -48.1238 },
-  tocantinopolis: { latitude: -6.3258, longitude: -47.4198 },
-  '104 sul': { latitude: -10.204, longitude: -48.325 },
-  'arse 12': { latitude: -10.198, longitude: -48.319 },
-  'arse 14': { latitude: -10.205, longitude: -48.318 },
-  'aureny iii': { latitude: -10.304, longitude: -48.302 },
-  'aureny iv': { latitude: -10.312, longitude: -48.295 },
-  taquaralto: { latitude: -10.295, longitude: -48.333 },
-};
-
-function normalizeText(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/\s+/g, ' ')
-    .trim();
-}
 
 function toFiniteNumber(value: unknown): number | null {
   if (typeof value === 'number' && Number.isFinite(value)) {
@@ -76,18 +47,6 @@ function isValidCoordinatePair(latitude: number | null, longitude: number | null
   return latitude >= -90 && latitude <= 90 && longitude >= -180 && longitude <= 180;
 }
 
-function inferCoordsFromText(chunks: Array<string | undefined>): { latitude: number; longitude: number } {
-  const text = normalizeText(chunks.filter(Boolean).join(' '));
-
-  for (const [name, coords] of Object.entries(TOCANTINS_COORDS_BY_NAME)) {
-    if (text.includes(name)) {
-      return coords;
-    }
-  }
-
-  return TOCANTINS_DEFAULT_COORDS;
-}
-
 function resolveObraCoordinates(dto: ObraResponseDTO): { latitude: number; longitude: number } {
   const latitude = toFiniteNumber(dto.latitude);
   const longitude = toFiniteNumber(dto.longitude);
@@ -99,29 +58,38 @@ function resolveObraCoordinates(dto: ObraResponseDTO): { latitude: number; longi
     };
   }
 
-  return inferCoordsFromText([dto.bairro, dto.endereco, dto.titulo, dto.descricao]);
+  return TOCANTINS_DEFAULT_COORDS;
 }
 
 function mapObraFromDTO(dto: ObraResponseDTO): Obra {
   const coords = resolveObraCoordinates(dto);
 
+  // Determine esfera from DTO
+  const esfera: ObraEsfera = (dto as any).esfera === 'Estadual'
+    ? 'Estadual'
+    : (dto as any).esfera === 'Municipal'
+      ? 'Municipal'
+      : 'Federal';
+
   return {
     id: dto.id,
     titulo: dto.titulo,
     descricao: dto.descricao,
-    tipo: dto.tipo as ObraTipoEnum,
+    tipo: dto.tipo,
     latitude: coords.latitude,
     longitude: coords.longitude,
     endereco: dto.endereco,
     bairro: dto.bairro,
     status: dto.status as ObraStatusEnum,
+    esfera,
+    fonteUrl: (dto as any).fonteUrl || '',
     dataInicio: (dto as any).dataInicio ? new Date((dto as any).dataInicio) : undefined,
     dataFimPrevista: (dto as any).dataFimPrevista
       ? new Date((dto as any).dataFimPrevista)
       : undefined,
     dataFimReal: (dto as any).dataFimReal ? new Date((dto as any).dataFimReal) : undefined,
-    percentualProgresso: dto.percentualProgresso,
-    orcamentoEstimado: (dto as any).orcamentoEstimado,
+    valorInvestimento: (dto as any).valorInvestimento || undefined,
+    executor: (dto as any).executor || undefined,
     createdAt: new Date(dto.createdAt),
     updatedAt: new Date(dto.updatedAt),
   };
@@ -189,57 +157,6 @@ class APIClient {
       return null;
     }
   }
-
-  // Denúncias
-  async criarDenuncia(denuncia: CriarDenunciaDTO): Promise<Denuncia | null> {
-    try {
-      const response = await this.client.post<ApiResponse<Denuncia>>(
-        '/denuncias',
-        denuncia
-      );
-      return response.data.data || null;
-    } catch {
-      return null;
-    }
-  }
-
-  async listarDenuncias(): Promise<Denuncia[]> {
-    try {
-      const response = await this.client.get<ApiResponse<Denuncia[]>>(
-        '/denuncias'
-      );
-      return response.data.data || [];
-    } catch {
-      return [];
-    }
-  }
-
-  async buscarDenunciaPorId(id: string): Promise<Denuncia | null> {
-    try {
-      const response = await this.client.get<ApiResponse<Denuncia>>(
-        `/denuncias/${id}`
-      );
-      return response.data.data || null;
-    } catch {
-      return null;
-    }
-  }
-
-  async atualizarStatusDenuncia(
-    id: string,
-    novoStatus: string
-  ): Promise<Denuncia | null> {
-    try {
-      const response = await this.client.patch<ApiResponse<Denuncia>>(
-        `/denuncias/${id}/status`,
-        { status: novoStatus }
-      );
-      return response.data.data || null;
-    } catch {
-      return null;
-    }
-  }
 }
 
 export { APIClient };
-

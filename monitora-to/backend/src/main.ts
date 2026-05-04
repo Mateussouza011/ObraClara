@@ -69,12 +69,7 @@ const obraSyncService = new ObraSyncService(prisma);
 // ========== ROTAS ==========
 
 app.use('/api', async (req: Request, res: Response, next: NextFunction) => {
-  if (databaseReady) {
-    next();
-    return;
-  }
-
-  // Serve real-time data for obras even without database.
+  // Sempre serve dados ao vivo para obras (pesquisa online em tempo real)
   if (req.path === '/obras' || req.path === '/obras/proximas') {
     try {
       const page = parsePositiveInt(req.query.page as string, 1);
@@ -105,7 +100,7 @@ app.use('/api', async (req: Request, res: Response, next: NextFunction) => {
         totalPages: Math.ceil(live.total / limit),
         sortBy,
         sortDirection,
-        message: 'Dados ao vivo das fontes públicas (modo sem banco).',
+        message: 'Dados ao vivo pesquisados online em tempo real.',
       });
       return;
     } catch (error) {
@@ -138,6 +133,11 @@ app.use('/api', async (req: Request, res: Response, next: NextFunction) => {
       res.status(502).json({ success: false, error: message });
       return;
     }
+  }
+
+  if (databaseReady) {
+    next();
+    return;
   }
 
   res.status(503).json({

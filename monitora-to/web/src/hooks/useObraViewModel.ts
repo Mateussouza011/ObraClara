@@ -78,11 +78,15 @@ export function useObraViewModel() {
     obterLocalizacao();
   }, []);
 
-  // Carregar obras próximas quando localização mudar
+  // Carregar obras próximas quando localização mudar (com debounce para o raio)
   useEffect(() => {
-    if (localizacao) {
+    if (!localizacao) return;
+
+    const timer = setTimeout(() => {
       carregarObrasProximas();
-    }
+    }, 500);
+
+    return () => clearTimeout(timer);
   }, [localizacao, raioFiltro]);
 
   const obterLocalizacao = useCallback(async () => {

@@ -1,49 +1,88 @@
 import axios from 'axios';
-import { createHash } from 'crypto';
-import { PrismaClient } from '@prisma/client';
-import { ObraStatus, ObraTipo } from '@domain/entities';
-import { v4 as uuidv4 } from 'uuid';
-import { ObraResponseDTO } from '@application/dtos';
 
-type SyncOrigin = 'startup' | 'interval' | 'manual';
+// O domínio principal do portal mudou para sistema.gov.br, mas a API parece ainda responder em gestao.gov.br
+const OBRASGOV_BASE = 'https://api.obrasgov.gestao.gov.br/obrasgov/api';
+const UF = 'TO';
+const PAGE_SIZE = 100;
+const MAX_RETRIES = 3;
+const RETRY_DELAY_MS = 2000;
+const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutos de cache
 
-interface ObraCandidate {
-  titulo: string;
-  descricao: string;
-  fonteUrl: string;
-  tipo: ObraTipo;
-  status: ObraStatus;
-  percentualProgresso: number;
-  bairro: string;
-  endereco: string;
-  latitude: number;
-  longitude: number;
-}
+// Cache de resultados para evitar chamadas repetidas ao governo
+let projectsCache: { data: ObrasGovProjeto[]; timestamp: number } | null = null;
+const geoCache = new Map<string, { latitude: number; longitude: number } | null>();
 
-interface LiveObra extends ObraResponseDTO {
-  fonteUrl: string;
-}
+// Promessa para evitar múltiplas chamadas simultâneas (Singleton Promise)
+let currentSyncPromise: Promise<ObrasGovProjeto[]> | null = null;
 
-interface SyncRunSummary {
-  origin: SyncOrigin;
-  startedAt: string;
-  finishedAt: string;
-  fetched: number;
-  inserted: number;
-  updated: number;
-  ignored: number;
-}
+// Coordenadas padrão para o centro do Tocantins
+const DEFAULT_COORDS = { latitude: -10.184, longitude: -48.3336 };
 
-interface ExistingObraRecord {
-  id: string;
-  fingerprint: string | null;
-  titulo: string;
-  bairro: string | null;
+// ========== Interfaces ==========
+
+interface ObrasGovProjeto {
+  idUnico: string;
+  nome: string;
+  cep: string | null;
   endereco: string | null;
   descricao: string;
-  percentualProgresso: number;
-  status: ObraStatus;
-  tipo: ObraTipo;
+  funcaoSocial: string | null;
+  metaGlobal: string | null;
+  dataInicialPrevista: string | null;
+  dataFinalPrevista: string | null;
+  dataInicialEfetiva: string | null;
+  dataFinalEfetiva: string | null;
+  dataCadastro: string | null;
+  especie: string | null;
+  natureza: string | null;
+  situacao: string;
+  uf: string;
+  populacaoBeneficiada: string | null;
+  descPopulacaoBeneficiada: string | null;
+  dataSituacao: string | null;
+  tomadores: Array<{ nome: string; codigo: number }>;
+  executores: Array<{ nome: string; codigo: number }>;
+  repassadores: Array<{ nome: string; codigo: number }>;
+  eixos: Array<{ id: number; descricao: string }>;
+  tipos: Array<{ id: number; descricao: string; idEixo: number }>;
+  subTipos: Array<{ id: number; descricao: string; idTipo: number }>;
+  fontesDeRecurso: Array<{ origem: string; valorInvestimentoPrevisto: number }>;
+}
+
+interface ObrasGovGeometria {
+  geometriaWkt: string;
+  dataCriacao: string | null;
+  origem: string | null;
+  nomeAreaExecutora: string | null;
+  enderecoAreaExecutora: string | null;
+  cepAreaExecutora: string | null;
+}
+
+interface ObrasGovPageResponse {
+  content: ObrasGovProjeto[];
+  totalElements: number;
+  totalPages: number;
+  number: number;
+  size: number;
+}
+
+export interface ObraOficial {
+  id: string;
+  titulo: string;
+  descricao: string;
+  esfera: 'Federal' | 'Estadual' | 'Municipal';
+  situacao: string;
+  especie: string;
+  endereco: string;
+  cidade: string;
+  latitude: number;
+  longitude: number;
+  dataInicio: string | null;
+  dataFimPrevista: string | null;
+  valorInvestimento: number | null;
+  executor: string;
+  fonteUrl: string;
+  dataCadastro: string | null;
 }
 
 export interface ObraSyncStatus {
@@ -60,316 +99,106 @@ export interface ObraSyncStatus {
   };
 }
 
-const DEFAULT_COORDS = { latitude: -10.184, longitude: -48.3336 };
-const TOCANTINS_CITIES: Array<{ nome: string; latitude: number; longitude: number }> = [
-  { nome: 'Palmas', latitude: -10.184, longitude: -48.3336 },
-  { nome: 'Araguaina', latitude: -7.1926, longitude: -48.2044 },
-  { nome: 'Gurupi', latitude: -11.7279, longitude: -49.068 },
-  { nome: 'Porto Nacional', latitude: -10.7081, longitude: -48.4172 },
-  { nome: 'Paraiso do Tocantins', latitude: -10.1753, longitude: -48.8822 },
-  { nome: 'Colinas do Tocantins', latitude: -8.0576, longitude: -48.4757 },
-  { nome: 'Guarai', latitude: -8.8354, longitude: -48.5114 },
-  { nome: 'Dianopolis', latitude: -11.6237, longitude: -46.8198 },
-  { nome: 'Araguatins', latitude: -5.6466, longitude: -48.1238 },
-  { nome: 'Tocantinopolis', latitude: -6.3258, longitude: -47.4198 },
-  { nome: 'Pedro Afonso', latitude: -8.9646, longitude: -48.1726 },
-  { nome: 'Formoso do Araguaia', latitude: -11.7973, longitude: -49.5301 },
-  { nome: 'Miracema do Tocantins', latitude: -9.5665, longitude: -48.3933 },
-  { nome: 'Taguatinga', latitude: -12.4032, longitude: -46.4366 },
-  { nome: 'Augustinopolis', latitude: -5.4686, longitude: -47.8867 },
-  { nome: 'Xambioa', latitude: -6.4105, longitude: -48.5353 },
-  { nome: 'Nova Olinda', latitude: -7.6327, longitude: -48.4253 },
-  { nome: 'Lagoa da Confusao', latitude: -10.7951, longitude: -49.6192 },
-  { nome: 'Peixe', latitude: -12.0284, longitude: -48.5397 },
-  { nome: 'Alvorada', latitude: -12.4799, longitude: -49.1246 },
-];
+// ========== Helpers ==========
 
-const BAIRRO_COORDS: Record<string, { latitude: number; longitude: number }> = {
-  '104 sul': { latitude: -10.204, longitude: -48.325 },
-  'arse 12': { latitude: -10.198, longitude: -48.319 },
-  'arse 14': { latitude: -10.205, longitude: -48.318 },
-  'aureny iii': { latitude: -10.304, longitude: -48.302 },
-  'aureny iv': { latitude: -10.312, longitude: -48.295 },
-  taquaralto: { latitude: -10.295, longitude: -48.333 },
-};
-
-const OBRA_KEYWORDS = [
-  'obra',
-  'obras',
-  'pavimenta',
-  'asfalto',
-  'recapeamento',
-  'drenagem',
-  'infraestrutura',
-  'construcao',
-  'construção',
-  'reforma',
-  'ponte',
-  'avenida',
-  'rua',
-  'saneamento',
-  'iluminacao',
-  'iluminação',
-  'ordem de servico',
-  'ordem de serviço',
-];
-
-const PUBLIC_WORK_KEYWORDS = [
-  'prefeitura',
-  'municipal',
-  'municipio',
-  'município',
-  'governo do estado',
-  'governo estadual',
-  'estadual',
-  'secretaria de infraestrutura',
-  'seinfra',
-  'ageto',
-  'tocantins',
-  'to',
-  'federal',
-  'governo federal',
-  'uniao',
-  'união',
-  'ministerio',
-  'ministério',
-  'pac',
-  'dnit',
-  'codevasf',
-  'fnde',
-  'minha casa minha vida',
-  'caixa economica federal',
-  'caixa econômica federal',
-  'instituto federal',
-  'ifto',
-  'br-153',
-  'br-010',
-  'br-230',
-  'br-242',
-];
-
-const PUBLIC_SOURCE_HINTS = [
-  'gov.br',
-  'to.gov.br',
-  'prefeitura',
-  'camara',
-  'dnit.gov.br',
-  'caixa.gov.br',
-  'codevasf.gov.br',
-  'ifto.edu.br',
-];
-
-const CONCLUDED_KEYWORDS = ['conclu', 'entreg', 'inaugur', 'finaliz'];
-
-function normalizeText(value: string): string {
-  return value
-    .normalize('NFD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .toLowerCase()
-    .replace(/\s+/g, ' ')
-    .trim();
+async function sleep(ms: number) {
+  return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function stripTags(html: string): string {
-  return html
-    .replace(/<script[\s\S]*?<\/script>/gi, ' ')
-    .replace(/<style[\s\S]*?<\/style>/gi, ' ')
-    .replace(/<[^>]*>/g, ' ')
-    .replace(/&nbsp;/gi, ' ')
-    .replace(/&amp;/gi, '&')
-    .replace(/\s+/g, ' ')
-    .trim();
-}
+function inferEsfera(projeto: ObrasGovProjeto): 'Federal' | 'Estadual' | 'Municipal' {
+  const fontes = projeto.fontesDeRecurso || [];
 
-function inferTipo(texto: string): ObraTipo {
-  const normalized = normalizeText(texto);
-  if (normalized.includes('asfalto') || normalized.includes('pavimenta') || normalized.includes('recape')) {
-    return ObraTipo.ASFALTAMENTO;
+  // Check source of funds
+  for (const fonte of fontes) {
+    const origem = (fonte.origem || '').toLowerCase();
+    if (origem.includes('municipal')) return 'Municipal';
+    if (origem.includes('estadual')) return 'Estadual';
   }
-  if (normalized.includes('drenagem')) {
-    return ObraTipo.DRENAGEM;
-  }
-  if (normalized.includes('iluminacao') || normalized.includes('iluminação')) {
-    return ObraTipo.ILUMINACAO;
-  }
-  if (normalized.includes('saneamento') || normalized.includes('esgoto')) {
-    return ObraTipo.SANEAMENTO;
-  }
-  if (normalized.includes('construcao') || normalized.includes('construção') || normalized.includes('reforma')) {
-    return ObraTipo.CONSTRUCAO;
-  }
-  return ObraTipo.OUTRO;
-}
 
-function inferStatus(texto: string): ObraStatus {
-  const normalized = normalizeText(texto);
-  if (CONCLUDED_KEYWORDS.some((keyword) => normalized.includes(keyword))) {
-    return ObraStatus.CONCLUIDA;
-  }
-  if (normalized.includes('ordem de servico') || normalized.includes('ordem de serviço') || normalized.includes('licitacao')) {
-    return ObraStatus.PLANEJADA;
-  }
-  if (normalized.includes('paralisad') || normalized.includes('pausad')) {
-    return ObraStatus.PAUSADA;
-  }
-  return ObraStatus.EM_EXECUCAO;
-}
+  // Check executores/tomadores for municipal hints
+  const allEntities = [
+    ...projeto.executores.map((e) => e.nome.toLowerCase()),
+    ...projeto.tomadores.map((t) => t.nome.toLowerCase()),
+    ...projeto.repassadores.map((r) => r.nome.toLowerCase()),
+  ];
 
-function inferPercentual(texto: string, status: ObraStatus): number {
-  const normalized = normalizeText(texto);
-  const percentualMatch = normalized.match(/(\d{1,3})\s?%/);
-  if (percentualMatch) {
-    return Math.max(0, Math.min(100, Number(percentualMatch[1])));
-  }
-  if (status === ObraStatus.PLANEJADA) return 0;
-  if (status === ObraStatus.CONCLUIDA) return 100;
-  if (status === ObraStatus.PAUSADA) return 50;
-  return 25;
-}
-
-function inferBairro(texto: string, cidade: string): string {
-  const normalized = normalizeText(texto);
-  if (normalized.includes('104 sul')) return '104 Sul';
-  if (normalized.includes('arse 12')) return 'ARSE 12';
-  if (normalized.includes('arse 14')) return 'ARSE 14';
-  if (normalized.includes('aureny iii')) return 'Aureny III';
-  if (normalized.includes('aureny iv')) return 'Aureny IV';
-  if (normalized.includes('taquaralto')) return 'Taquaralto';
-  return cidade;
-}
-
-function inferCidade(texto: string): string {
-  const normalized = normalizeText(texto);
-
-  for (const cidade of TOCANTINS_CITIES) {
-    if (normalized.includes(normalizeText(cidade.nome))) {
-      return cidade.nome;
+  for (const entity of allEntities) {
+    if (
+      entity.includes('prefeitura') ||
+      entity.includes('fundo municipal') ||
+      entity.includes('municipio') ||
+      entity.includes('município')
+    ) {
+      return 'Municipal';
+    }
+    if (
+      entity.includes('governo do estado') ||
+      entity.includes('governo estadual') ||
+      entity.includes('secretaria de estado') ||
+      entity.includes('estado do tocantins')
+    ) {
+      return 'Estadual';
     }
   }
 
-  return 'Palmas';
+  return 'Federal';
 }
 
-function inferEndereco(texto: string, bairro: string, cidade: string): string {
-  const ruaMatch = texto.match(/(Avenida|Av\.|Rua|Quadra)\s+[A-Za-z0-9\-\s]+/i);
-  if (ruaMatch) return ruaMatch[0].trim();
-  return `${bairro}, ${cidade} - TO`;
-}
+function inferCidade(projeto: ObrasGovProjeto): string {
+  // Try to extract city from the project name or description
+  const texto = `${projeto.nome} ${projeto.descricao} ${projeto.funcaoSocial || ''}`.toLowerCase();
 
-function inferCoords(bairro: string, cidade: string): { latitude: number; longitude: number } {
-  const bairroKey = normalizeText(bairro);
-  const bairroCoords = BAIRRO_COORDS[bairroKey];
-  if (bairroCoords) return bairroCoords;
+  const cidadesTocantins = [
+    'Palmas', 'Araguaína', 'Gurupi', 'Porto Nacional', 'Paraíso do Tocantins',
+    'Colinas do Tocantins', 'Guaraí', 'Dianópolis', 'Araguatins', 'Tocantinópolis',
+    'Pedro Afonso', 'Formoso do Araguaia', 'Miracema do Tocantins', 'Taguatinga',
+    'Augustinópolis', 'Xambioá', 'Nova Olinda', 'Lagoa da Confusão', 'Peixe',
+    'Alvorada', 'Natividade', 'Arraias', 'Ponte Alta do Tocantins', 'Wanderlândia',
+    'Itacajá', 'Ananás', 'Cristalândia', 'Miranorte', 'Goiatins', 'Filadélfia',
+    'Axixá do Tocantins', 'Conceição do Tocantins', 'Novo Acordo', 'Pium',
+    'Sandolândia', 'Dueré', 'Figueirópolis', 'Palmeirópolis', 'Brejinho de Nazaré',
+    'Aliança do Tocantins', 'Santa Rosa do Tocantins', 'Tocantínia',
+  ];
 
-  const cidadeCoords = TOCANTINS_CITIES.find(
-    (item) => normalizeText(item.nome) === normalizeText(cidade),
-  );
-
-  if (cidadeCoords) {
-    return {
-      latitude: cidadeCoords.latitude,
-      longitude: cidadeCoords.longitude,
-    };
-  }
-
-  return DEFAULT_COORDS;
-}
-
-function isLikelyTocantinsWork(normalizedText: string, fonteUrl: string): boolean {
-  if (normalizedText.includes('tocantins') || normalizedText.includes(' - to') || normalizedText.includes('/to')) {
-    return true;
-  }
-
-  for (const cidade of TOCANTINS_CITIES) {
-    if (normalizedText.includes(normalizeText(cidade.nome))) {
-      return true;
+  for (const cidade of cidadesTocantins) {
+    if (texto.includes(cidade.toLowerCase())) {
+      return cidade;
     }
   }
 
-  const normalizedUrl = normalizeText(fonteUrl);
-  return normalizedUrl.includes('to.gov.br') || normalizedUrl.includes('.to.');
+  // Try tomadores/executores for municipal entities
+  for (const entity of [...projeto.tomadores, ...projeto.executores]) {
+    const nome = entity.nome;
+    for (const cidade of cidadesTocantins) {
+      if (nome.toLowerCase().includes(cidade.toLowerCase())) {
+        return cidade;
+      }
+    }
+  }
+
+  return 'Tocantins';
 }
 
-function isLikelyPublicWorkInTO(normalizedText: string, fonteUrl: string): boolean {
-  const normalizedUrl = normalizeText(fonteUrl);
-  const hasPublicKeyword = PUBLIC_WORK_KEYWORDS.some((keyword) => normalizedText.includes(keyword));
-  const hasPublicSourceHint = PUBLIC_SOURCE_HINTS.some((hint) => normalizedUrl.includes(hint));
-  const isInTO = isLikelyTocantinsWork(normalizedText, fonteUrl);
-  return isInTO && (hasPublicKeyword || hasPublicSourceHint);
+function parseWktPoint(wkt: string): { latitude: number; longitude: number } | null {
+  // Format: "POINT (-49.4466005 -11.4596773)"
+  const match = wkt.match(/POINT\s*\(\s*([-\d.]+)\s+([-\d.]+)\s*\)/i);
+  if (!match) return null;
+
+  const longitude = parseFloat(match[1]);
+  const latitude = parseFloat(match[2]);
+
+  if (!Number.isFinite(latitude) || !Number.isFinite(longitude)) return null;
+  if (latitude < -90 || latitude > 90 || longitude < -180 || longitude > 180) return null;
+
+  return { latitude, longitude };
 }
 
-export function createFingerprintHash(input: { titulo: string; bairro: string; endereco: string }): string {
-  const normalized = [input.titulo, input.bairro, input.endereco]
-    .map((chunk) => normalizeText(chunk))
-    .join('|');
-
-  return createHash('sha256').update(normalized).digest('hex');
+function buildObraUrl(idUnico: string): string {
+  // O domínio mudou para sistema.gov.br e o path para visao-geral-intervencao
+  return `https://obrasgov.sistema.gov.br/cipi-frontend/acesso-livre/visao-geral-intervencao/${encodeURIComponent(idUnico)}`;
 }
 
-function getDefaultSources(): string[] {
-  return TOCANTINS_CITIES.flatMap((cidade) => {
-    const cityToken = encodeURIComponent(cidade.nome);
-    return [
-      `https://news.google.com/rss/search?q=obras+publicas+${cityToken}+TO&hl=pt-BR&gl=BR&ceid=BR:pt-419`,
-      `https://news.google.com/rss/search?q=prefeitura+${cityToken}+obras+TO&hl=pt-BR&gl=BR&ceid=BR:pt-419`,
-      `https://news.google.com/rss/search?q=governo+do+tocantins+obras+${cityToken}&hl=pt-BR&gl=BR&ceid=BR:pt-419`,
-      `https://news.google.com/rss/search?q=infraestrutura+${cityToken}+TO&hl=pt-BR&gl=BR&ceid=BR:pt-419`,
-      `https://news.google.com/rss/search?q=site:gov.br+obras+${cityToken}+TO&hl=pt-BR&gl=BR&ceid=BR:pt-419`,
-      `https://news.google.com/rss/search?q=site:to.gov.br+obras+${cityToken}&hl=pt-BR&gl=BR&ceid=BR:pt-419`,
-    ];
-  });
-}
-
-function parseEnvSources(): string[] {
-  const envValue = process.env.OBRA_SYNC_SOURCES;
-  if (!envValue) return getDefaultSources();
-
-  return envValue
-    .split(',')
-    .map((value) => value.trim())
-    .filter((value) => value.length > 0);
-}
-
-function extractFromRss(xml: string, sourceUrl: string): Array<{ titulo: string; texto: string; url: string }> {
-  const items = [...xml.matchAll(/<item>([\s\S]*?)<\/item>/gi)];
-  if (!items.length) return [];
-
-  return items
-    .map((item) => {
-      const itemBody = item[1] || '';
-      const title = (itemBody.match(/<title><!\[CDATA\[([\s\S]*?)\]\]><\/title>/i)?.[1]
-        || itemBody.match(/<title>([\s\S]*?)<\/title>/i)?.[1]
-        || '')
-        .trim();
-      const description = (itemBody.match(/<description><!\[CDATA\[([\s\S]*?)\]\]><\/description>/i)?.[1]
-        || itemBody.match(/<description>([\s\S]*?)<\/description>/i)?.[1]
-        || '')
-        .trim();
-      const link = (itemBody.match(/<link>([\s\S]*?)<\/link>/i)?.[1] || sourceUrl).trim();
-      return {
-        titulo: stripTags(title),
-        texto: stripTags(description),
-        url: link,
-      };
-    })
-    .filter((item) => item.titulo.length > 0 || item.texto.length > 0);
-}
-
-function extractFromHtml(html: string, sourceUrl: string): Array<{ titulo: string; texto: string; url: string }> {
-  const anchors = [...html.matchAll(/<a\s+[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi)];
-  const candidates = anchors.map((match) => {
-    const href = match[1] || sourceUrl;
-    const titleText = stripTags(match[2] || '');
-    const absoluteUrl = href.startsWith('http') ? href : new URL(href, sourceUrl).toString();
-    return {
-      titulo: titleText,
-      texto: titleText,
-      url: absoluteUrl,
-    };
-  });
-
-  return candidates.filter((item) => item.titulo.length > 20);
-}
+// ========== Service ==========
 
 export class ObraSyncService {
   private readonly intervalMs: number;
@@ -378,14 +207,10 @@ export class ObraSyncService {
   private lastRunAt?: string;
   private lastSuccessAt?: string;
   private lastError?: string;
-  private stats = {
-    fetched: 0,
-    inserted: 0,
-    updated: 0,
-    ignored: 0,
-  };
+  private stats = { fetched: 0, inserted: 0, updated: 0, ignored: 0 };
 
-  constructor(private prisma: PrismaClient) {
+  // prisma is kept for signature compatibility, not used in this version
+  constructor(private prisma: any) {
     const parsedInterval = Number(process.env.OBRA_SYNC_INTERVAL_MS || '300000');
     this.intervalMs = Number.isFinite(parsedInterval) && parsedInterval >= 10000
       ? parsedInterval
@@ -393,13 +218,7 @@ export class ObraSyncService {
   }
 
   startPeriodicSync(): void {
-    if (this.timer) return;
-
-    this.timer = setInterval(() => {
-      this.syncNow('interval').catch((error) => {
-        this.lastError = error instanceof Error ? error.message : 'Falha desconhecida';
-      });
-    }, this.intervalMs);
+    // No-op: live data is fetched on demand
   }
 
   stopPeriodicSync(): void {
@@ -408,136 +227,17 @@ export class ObraSyncService {
     this.timer = null;
   }
 
-  async syncNow(origin: SyncOrigin): Promise<SyncRunSummary> {
-    if (this.running) {
-      throw new Error('Sincronização já está em execução');
-    }
-
-    this.running = true;
-    this.lastRunAt = new Date().toISOString();
-
-    const startedAt = new Date();
-    const runStats = {
+  async syncNow(_origin: string): Promise<any> {
+    // No-op: live mode only
+    return {
+      origin: _origin,
+      startedAt: new Date().toISOString(),
+      finishedAt: new Date().toISOString(),
       fetched: 0,
       inserted: 0,
       updated: 0,
       ignored: 0,
     };
-
-    try {
-      const sources = parseEnvSources();
-      const candidates = await this.collectCandidates(sources);
-      runStats.fetched = candidates.length;
-
-      const existing: ExistingObraRecord[] = await this.prisma.obra.findMany({
-        select: {
-          id: true,
-          fingerprint: true,
-          titulo: true,
-          bairro: true,
-          endereco: true,
-          descricao: true,
-          percentualProgresso: true,
-          status: true,
-          tipo: true,
-        },
-      }) as ExistingObraRecord[];
-
-      const existingByFingerprint = new Map(
-        existing.map((obra) => [
-          obra.fingerprint || createFingerprintHash({
-            titulo: obra.titulo,
-            bairro: obra.bairro || '',
-            endereco: obra.endereco || '',
-          }),
-          obra,
-        ]),
-      );
-
-      const seenRunFingerprints = new Set<string>();
-
-      for (const candidate of candidates) {
-        if (candidate.status === ObraStatus.CONCLUIDA) {
-          runStats.ignored += 1;
-          continue;
-        }
-
-        const fingerprint = createFingerprintHash(candidate);
-
-        if (seenRunFingerprints.has(fingerprint)) {
-          runStats.ignored += 1;
-          continue;
-        }
-
-        seenRunFingerprints.add(fingerprint);
-
-        const existingRecord = existingByFingerprint.get(fingerprint);
-        const descricaoComFonte = `${candidate.descricao}\n\nFonte automática: ${candidate.fonteUrl}`;
-
-        if (!existingRecord) {
-          await this.prisma.obra.create({
-            data: {
-              id: uuidv4(),
-              titulo: candidate.titulo,
-              descricao: descricaoComFonte,
-              tipo: candidate.tipo,
-              latitude: candidate.latitude,
-              longitude: candidate.longitude,
-              endereco: candidate.endereco,
-              bairro: candidate.bairro,
-              fingerprint,
-              status: candidate.status,
-              percentualProgresso: candidate.percentualProgresso,
-              dataInicio: candidate.status === ObraStatus.PLANEJADA ? null : new Date(),
-            },
-          });
-
-          runStats.inserted += 1;
-          continue;
-        }
-
-        const hasChanges =
-          existingRecord.percentualProgresso !== candidate.percentualProgresso
-          || existingRecord.status !== candidate.status
-          || normalizeText(existingRecord.descricao || '').includes(normalizeText(candidate.fonteUrl)) === false;
-
-        if (!hasChanges) {
-          runStats.ignored += 1;
-          continue;
-        }
-
-        await this.prisma.obra.update({
-          where: { id: existingRecord.id },
-          data: {
-            descricao: descricaoComFonte,
-            fingerprint,
-            status: candidate.status,
-            percentualProgresso: candidate.percentualProgresso,
-            updatedAt: new Date(),
-          },
-        });
-
-        runStats.updated += 1;
-      }
-
-      this.lastSuccessAt = new Date().toISOString();
-      this.stats = runStats;
-
-      return {
-        origin,
-        startedAt: startedAt.toISOString(),
-        finishedAt: new Date().toISOString(),
-        fetched: runStats.fetched,
-        inserted: runStats.inserted,
-        updated: runStats.updated,
-        ignored: runStats.ignored,
-      };
-    } catch (error) {
-      this.lastError = error instanceof Error ? error.message : 'Falha desconhecida';
-      throw error;
-    } finally {
-      this.running = false;
-    }
   }
 
   getStatus(): ObraSyncStatus {
@@ -551,154 +251,223 @@ export class ObraSyncService {
     };
   }
 
+  /**
+   * Busca obras oficiais da API ObrasGov.br, filtra e retorna para o frontend.
+   */
   async listarObrasAoVivo(params?: {
     latitude?: number;
     longitude?: number;
     raioKm?: number;
     page?: number;
     limit?: number;
-    sortBy?: 'updatedAt' | 'createdAt' | 'percentualProgresso' | 'titulo';
+    sortBy?: string;
     sortDirection?: 'asc' | 'desc';
-  }): Promise<{ data: LiveObra[]; total: number }> {
-    const candidates = await this.collectCandidates(parseEnvSources());
-    const semConcluidas = candidates.filter((candidate) => candidate.status !== ObraStatus.CONCLUIDA);
+  }): Promise<{ data: any[]; total: number }> {
+    // 0. Verificar Cache
+    const nowTimestamp = Date.now();
+    if (projectsCache && (nowTimestamp - projectsCache.timestamp < CACHE_TTL_MS)) {
+      return this.processarProjetos(projectsCache.data, params);
+    }
 
-    const uniqueByFingerprint = new Map<string, ObraCandidate>();
-    semConcluidas.forEach((candidate) => {
-      uniqueByFingerprint.set(createFingerprintHash(candidate), candidate);
+    // 1. Lidar com Concorrência (se já estiver baixando, espera)
+    if (currentSyncPromise) {
+      const data = await currentSyncPromise;
+      return this.processarProjetos(data, params);
+    }
+
+    this.running = true;
+    this.lastRunAt = new Date().toISOString();
+
+    try {
+      currentSyncPromise = (async () => {
+        const response = await this.fetchWithRetry<ObrasGovPageResponse>(
+          `${OBRASGOV_BASE}/projeto-investimento`,
+          { uf: UF, page: 0, size: PAGE_SIZE },
+        );
+        return response.content || [];
+      })();
+
+      const allProjetos = await currentSyncPromise;
+      
+      // Atualizar Cache
+      projectsCache = {
+        data: allProjetos,
+        timestamp: Date.now(),
+      };
+
+      return this.processarProjetos(allProjetos, params);
+    } catch (error) {
+      console.error('[ObraSyncService] Erro ao listar obras:', error);
+      this.lastError = error instanceof Error ? error.message : 'Falha desconhecida';
+      throw error;
+    } finally {
+      this.running = false;
+      currentSyncPromise = null;
+    }
+  }
+
+  private async processarProjetos(allProjetos: ObrasGovProjeto[], params: any): Promise<{ data: any[]; total: number }> {
+    this.stats.fetched = allProjetos.length;
+
+    // 2. Filter out concluded works — user only wants active/in-progress
+    const ativos = allProjetos.filter((p) => {
+      const sit = (p.situacao || '').toLowerCase();
+      return !sit.includes('conclu');
     });
+    this.stats.ignored = allProjetos.length - ativos.length;
 
-    let obras = Array.from(uniqueByFingerprint.values()).map((candidate) => this.mapCandidateToLiveObra(candidate));
+    // 3. Enrich with coordinates
+    const obras: ObraOficial[] = [];
+    for (const projeto of ativos) {
+      const coords = await this.fetchGeometria(projeto.idUnico);
+      const esfera = inferEsfera(projeto);
+      const cidade = inferCidade(projeto);
+      const valorTotal = (projeto.fontesDeRecurso || []).reduce(
+        (sum, f) => sum + (f.valorInvestimentoPrevisto || 0),
+        0,
+      );
 
-    if (
-      typeof params?.latitude === 'number'
-      && typeof params?.longitude === 'number'
-      && typeof params?.raioKm === 'number'
-    ) {
-      obras = obras.filter((obra) => {
-        const distance = this.distanceInKm(params.latitude!, params.longitude!, obra.latitude, obra.longitude);
-        return distance <= params.raioKm!;
+      const executor = projeto.executores.length > 0
+        ? projeto.executores[0].nome
+        : (projeto.tomadores.length > 0 ? projeto.tomadores[0].nome : 'Não informado');
+
+      obras.push({
+        id: projeto.idUnico,
+        titulo: projeto.nome,
+        descricao: projeto.descricao || projeto.metaGlobal || projeto.funcaoSocial || '',
+        esfera,
+        situacao: projeto.situacao,
+        especie: projeto.especie || 'Obra',
+        endereco: projeto.endereco || `${cidade} - TO`,
+        cidade,
+        latitude: coords?.latitude ?? DEFAULT_COORDS.latitude,
+        longitude: coords?.longitude ?? DEFAULT_COORDS.longitude,
+        dataInicio: projeto.dataInicialEfetiva || projeto.dataInicialPrevista,
+        dataFimPrevista: projeto.dataFinalPrevista,
+        valorInvestimento: valorTotal > 0 ? valorTotal : null,
+        executor,
+        fonteUrl: buildObraUrl(projeto.idUnico),
+        dataCadastro: projeto.dataCadastro,
       });
     }
 
-    const sortBy = params?.sortBy || 'updatedAt';
-    const sortDirection = params?.sortDirection || 'desc';
-    obras.sort((a, b) => this.compareLiveObras(a, b, sortBy, sortDirection));
+    // 4. Filter by radius if provided
+    let resultado = obras;
+    if (
+      typeof params?.latitude === 'number' &&
+      typeof params?.longitude === 'number' &&
+      typeof params?.raioKm === 'number'
+    ) {
+      resultado = resultado.filter((obra) => {
+        const dist = this.distanceInKm(params.latitude!, params.longitude!, obra.latitude, obra.longitude);
+        return dist <= params.raioKm!;
+      });
+    }
 
-    const total = obras.length;
-    const page = params?.page && params.page > 0 ? params.page : 1;
-    const limit = params?.limit && params.limit > 0 ? params.limit : 20;
-    const start = (page - 1) * limit;
-    const paginated = obras.slice(start, start + limit);
-
-    return {
-      data: paginated,
-      total,
-    };
-  }
-
-  private async collectCandidates(sources: string[]): Promise<ObraCandidate[]> {
-    const requests = sources.map(async (sourceUrl) => {
-      try {
-        const response = await axios.get<string>(sourceUrl, {
-          timeout: 15000,
-          responseType: 'text',
-          headers: {
-            'User-Agent': 'ObraClaraBot/1.0 (+https://localhost)',
-            Accept: 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-          },
-        });
-
-        const contentTypeHeader = String(response.headers['content-type'] || '').toLowerCase();
-        const body = response.data;
-        const rawItems = contentTypeHeader.includes('xml')
-          ? extractFromRss(body, sourceUrl)
-          : extractFromHtml(body, sourceUrl);
-
-        return rawItems
-          .map((item) => this.toCandidate(item.titulo, item.texto, item.url || sourceUrl))
-          .filter((item): item is ObraCandidate => item !== null);
-      } catch (error) {
-        const message = error instanceof Error ? error.message : 'erro desconhecido';
-        console.warn(`Falha ao buscar fonte ${sourceUrl}: ${message}`);
-        return [];
-      }
-    });
-
-    const results = await Promise.all(requests);
-    return results.flat();
-  }
-
-  private toCandidate(tituloBruto: string, textoBruto: string, fonteUrl: string): ObraCandidate | null {
-    const titulo = tituloBruto.trim().slice(0, 180);
-    const texto = textoBruto.trim().slice(0, 1200);
-    const aggregateText = `${titulo} ${texto}`.trim();
-    const normalized = normalizeText(aggregateText);
-
-    if (!aggregateText || aggregateText.length < 30) return null;
-    if (!OBRA_KEYWORDS.some((keyword) => normalized.includes(keyword))) return null;
-    if (!isLikelyPublicWorkInTO(normalized, fonteUrl)) return null;
-
-    const status = inferStatus(aggregateText);
-    const tipo = inferTipo(aggregateText);
-    const percentualProgresso = inferPercentual(aggregateText, status);
-    const cidade = inferCidade(aggregateText);
-    const bairro = inferBairro(aggregateText, cidade);
-    const endereco = inferEndereco(aggregateText, bairro, cidade);
-    const coords = inferCoords(bairro, cidade);
-
-    return {
-      titulo,
-      descricao: texto || titulo,
-      fonteUrl,
-      tipo,
-      status,
-      percentualProgresso,
-      bairro,
-      endereco,
-      latitude: coords.latitude,
-      longitude: coords.longitude,
-    };
-  }
-
-  private mapCandidateToLiveObra(candidate: ObraCandidate): LiveObra {
+    // 5. Map to the frontend DTO format
     const now = new Date();
-    return {
-      id: createFingerprintHash(candidate),
-      titulo: candidate.titulo,
-      descricao: `${candidate.descricao}\n\nFonte automática: ${candidate.fonteUrl}`,
-      tipo: candidate.tipo,
-      latitude: candidate.latitude,
-      longitude: candidate.longitude,
-      endereco: candidate.endereco,
-      bairro: candidate.bairro,
-      status: candidate.status,
-      percentualProgresso: candidate.percentualProgresso,
+    const mappedData = resultado.map((obra) => ({
+      id: obra.id,
+      titulo: obra.titulo,
+      descricao: obra.descricao,
+      tipo: obra.especie,
+      latitude: obra.latitude,
+      longitude: obra.longitude,
+      endereco: obra.endereco,
+      bairro: obra.cidade,
+      status: this.mapSituacaoToStatus(obra.situacao),
+      percentualProgresso: 0,
+      dataInicio: obra.dataInicio,
+      dataFimPrevista: obra.dataFimPrevista,
+      esfera: obra.esfera,
+      fonteUrl: obra.fonteUrl,
+      valorInvestimento: obra.valorInvestimento,
+      executor: obra.executor,
       createdAt: now,
       updatedAt: now,
-      fonteUrl: candidate.fonteUrl,
-    };
+    }));
+
+    const total = mappedData.length;
+    const page = params?.page && params.page > 0 ? params.page : 1;
+    const limit = params?.limit && params.limit > 0 ? params.limit : 100;
+    const start = (page - 1) * limit;
+    const paginated = mappedData.slice(start, start + limit);
+
+    this.lastSuccessAt = new Date().toISOString();
+    this.stats.inserted = ativos.length;
+
+    return { data: paginated, total };
   }
 
-  private compareLiveObras(
-    a: LiveObra,
-    b: LiveObra,
-    sortBy: 'updatedAt' | 'createdAt' | 'percentualProgresso' | 'titulo',
-    sortDirection: 'asc' | 'desc',
-  ): number {
-    const direction = sortDirection === 'asc' ? 1 : -1;
+  // ========== Private helpers ==========
 
-    if (sortBy === 'titulo') {
-      return a.titulo.localeCompare(b.titulo) * direction;
+  private async fetchWithRetry<T>(url: string, params: any): Promise<T> {
+    let lastError: any;
+    for (let i = 0; i < MAX_RETRIES; i++) {
+      try {
+        const response = await axios.get<T>(url, {
+          params,
+          timeout: 15000,
+          headers: {
+            Accept: 'application/json',
+            'User-Agent': 'ObraClaraBot/2.0 (+https://github.com/Mateussouza011/ObraClara)',
+          },
+        });
+        return response.data;
+      } catch (error: any) {
+        lastError = error;
+        const status = error.response?.status;
+        console.warn(`[ObraSyncService] Tentativa ${i + 1} falhou para ${url}: ${status || error.message}`);
+
+        // Only retry on 5xx or network errors
+        if (status && status < 500) break;
+
+        if (i < MAX_RETRIES - 1) {
+          await sleep(RETRY_DELAY_MS * (i + 1));
+        }
+      }
+    }
+    throw lastError;
+  }
+
+  private async fetchGeometria(idUnico: string): Promise<{ latitude: number; longitude: number } | null> {
+    // Check cache
+    if (geoCache.has(idUnico)) {
+      return geoCache.get(idUnico) || null;
     }
 
-    if (sortBy === 'percentualProgresso') {
-      return (a.percentualProgresso - b.percentualProgresso) * direction;
-    }
+    try {
+      const geometrias = await this.fetchWithRetry<ObrasGovGeometria[]>(
+        `${OBRASGOV_BASE}/geometria`,
+        { idUnico },
+      );
 
-    const aDate = new Date(sortBy === 'createdAt' ? a.createdAt : a.updatedAt).getTime();
-    const bDate = new Date(sortBy === 'createdAt' ? b.createdAt : b.updatedAt).getTime();
-    return (aDate - bDate) * direction;
+      if (Array.isArray(geometrias) && geometrias.length > 0) {
+        for (const geo of geometrias) {
+          if (geo.geometriaWkt) {
+            const coords = parseWktPoint(geo.geometriaWkt);
+            if (coords) {
+              geoCache.set(idUnico, coords);
+              return coords;
+            }
+          }
+        }
+      }
+
+      geoCache.set(idUnico, null);
+      return null;
+    } catch {
+      geoCache.set(idUnico, null);
+      return null;
+    }
+  }
+
+  private mapSituacaoToStatus(situacao: string): string {
+    const s = situacao.toLowerCase();
+    if (s.includes('execu')) return 'EM_EXECUCAO';
+    if (s.includes('paralis') || s.includes('pausad')) return 'PAUSADA';
+    if (s.includes('conclu')) return 'CONCLUIDA';
+    return 'PLANEJADA';
   }
 
   private distanceInKm(lat1: number, lon1: number, lat2: number, lon2: number): number {
@@ -706,11 +475,11 @@ export class ObraSyncService {
     const dLat = (lat2 - lat1) * (Math.PI / 180);
     const dLon = (lon2 - lon1) * (Math.PI / 180);
     const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2)
-      + Math.cos(lat1 * (Math.PI / 180))
-      * Math.cos(lat2 * (Math.PI / 180))
-      * Math.sin(dLon / 2)
-      * Math.sin(dLon / 2);
+      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * (Math.PI / 180)) *
+        Math.cos(lat2 * (Math.PI / 180)) *
+        Math.sin(dLon / 2) *
+        Math.sin(dLon / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
     return R * c;
   }
