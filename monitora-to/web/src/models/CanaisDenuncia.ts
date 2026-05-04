@@ -6,22 +6,27 @@ export interface CanalDenuncia {
 
 export const CANAIS_FEDERAIS: CanalDenuncia[] = [
   {
-    nome: "Fala.BR (Governo Federal)",
-    link: "https://falabr.cgu.gov.br/",
-    descricao: "Plataforma integrada para denúncias de órgãos federais (CGU)."
+    nome: "Fala.BR (Denúncia Anônima)",
+    link: "https://falabr.cgu.gov.br/v2/",
+    descricao: "Para denunciar obras federais de forma anônima. Clique em 'Registrar Manifestação' e depois 'Continuar sem se identificar'."
   },
   {
-    nome: "Tribunal de Contas da União (TCU)",
-    link: "https://denuncia.apps.tcu.gov.br/",
-    descricao: "Para denúncias sobre mau uso de recursos federais e irregularidades em obras da União."
+    nome: "TCU (Ouvidoria)",
+    link: "https://portal.tcu.gov.br/ouvidoria/denuncia.htm",
+    descricao: "Tribunal de Contas da União: Canal para denunciar desvios de recursos em obras federais."
   }
 ];
 
 export const CANAIS_ESTADUAIS: CanalDenuncia[] = [
   {
-    nome: "Ouvidoria-Geral do Estado do Tocantins",
-    link: "https://falabr.cgu.gov.br/publico/TO/Manifestacao/RegistrarManifestacao",
-    descricao: "Canal oficial para denúncias sobre obras e serviços do Governo do Estado do Tocantins."
+    nome: "MPTO - Ouvidoria (Anônima)",
+    link: "https://www.mpto.mp.br/ouvidoria/manifestation?tab=manifestation&type=anonymous",
+    descricao: "Canal direto do Ministério Público do Tocantins para denúncias anônimas sobre obras do Governo Estadual."
+  },
+  {
+    nome: "Ouvidoria-Geral do Estado (TO)",
+    link: "https://ouvidoria.to.gov.br/",
+    descricao: "Canal oficial da Controladoria-Geral do Estado do Tocantins."
   }
 ];
 
@@ -57,37 +62,25 @@ export const CIDADES_TO = [
 ];
 
 export const getCanalMunicipal = (cidade: string): CanalDenuncia => {
-  // Specific links for major cities if known, otherwise fallback to MPTO
-  const lowCidade = cidade.toLowerCase();
-  
-  if (lowCidade === "palmas") {
-    return {
-      nome: "Ouvidoria de Palmas",
-      link: "https://palmas.to.gov.br/portal/ouvidoria/",
-      descricao: "Canal oficial para denúncias sobre obras e serviços da Prefeitura de Palmas."
-    };
-  }
-  
-  if (lowCidade === "araguaína") {
-    return {
-      nome: "Ouvidoria de Araguaína",
-      link: "https://araguaina.to.gov.br/Ouvidoria",
-      descricao: "Canal oficial para denúncias sobre obras e serviços da Prefeitura de Araguaína."
-    };
-  }
+  const lowCidade = cidade.toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "") // Remove acentos
+    .replace(/\s+/g, ""); // Remove espaços
 
-  if (lowCidade === "gurupi") {
-    return {
-      nome: "Ouvidoria de Gurupi",
-      link: "https://gurupi.to.gov.br/ouvidoria",
-      descricao: "Canal oficial para denúncias sobre obras e serviços da Prefeitura de Gurupi."
-    };
-  }
+  // Cidades com portais próprios ou caminhos diferentes
+  const excecoes: Record<string, string> = {
+    "palmas": "https://ouvidoria.palmas.to.gov.br/ouvidoria/manifestacao/",
+    "araguaina": "https://www.araguaina.to.gov.br/ouvidoria-geral",
+    "portonacional": "https://portonacional.to.gov.br/ouvidoria",
+    "gurupi": "https://www.gurupi.to.gov.br/ouvidoria",
+    "araguana": "https://www.araguana.to.gov.br/ouvidoria"
+  };
 
-  // Fallback to MPTO for other municipalities as it covers all of them
+  const linkPortal = excecoes[lowCidade] || `https://acessoainformacao.${lowCidade}.to.gov.br/cidadao/ouvidoria/denuncia`;
+
   return {
-    nome: `Ministério Público - Promotoria de ${cidade}`,
-    link: "https://www.mpto.mp.br/ouvidoria/",
-    descricao: `Para denúncias sobre irregularidades em obras municipais de ${cidade}. O Ministério Público atua na fiscalização do patrimônio público.`
+    nome: `Ouvidoria de ${cidade}`,
+    link: linkPortal,
+    descricao: `Canal oficial da Prefeitura de ${cidade} para denúncias anônimas e manifestações sobre obras municipais.`
   };
 };

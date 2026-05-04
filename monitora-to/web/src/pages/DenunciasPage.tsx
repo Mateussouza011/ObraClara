@@ -17,7 +17,13 @@ const DenunciasPage: React.FC = () => {
     if (nivelObra === 'FEDERAL') return CANAIS_FEDERAIS;
     if (nivelObra === 'ESTADUAL') return CANAIS_ESTADUAIS;
     if (nivelObra === 'MUNICIPAL' && cidadeSelecionada) {
-      return [getCanalMunicipal(cidadeSelecionada)];
+      const municipal = getCanalMunicipal(cidadeSelecionada);
+      const mpto: CanalDenuncia = {
+        nome: `Ministério Público - Promotoria de ${cidadeSelecionada}`,
+        link: "https://www.mpto.mp.br/ouvidoria/manifestation?tab=manifestation&type=anonymous",
+        descricao: "Canal universal para denúncias anônimas em qualquer município do Tocantins. Use caso o portal da prefeitura esteja indisponível."
+      };
+      return [municipal, mpto];
     }
     return [];
   };
