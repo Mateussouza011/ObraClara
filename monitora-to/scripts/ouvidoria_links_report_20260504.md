@@ -1,0 +1,113 @@
+# Relatório - Links de Ouvidoria (TO)
+- Data: 2026-05-04
+- Fonte de portais (CGE): https://www.to.gov.br/cge/portais-de-transparencia-transparencia-ativa/5esxizym1ds6
+- Itens no JSON: 139
+- Atualizados (mudou URL): 69
+- Sem resolução: 33
+- Tempo total: 429.3s
+
+## Mudanças aplicadas
+- Almas: https://almas.megasofttransparencia.com.br/index.jsf/transparencia/ouvidoria/acessoainformacao/ouvidoria/sic/ouvidoria -> https://almas.megasofttransparencia.com.br/transparencia/ouvidoria
+- Angico: https://www.angico.to.gov.br/ops/404 -> https://www.angico.to.gov.br/ouvidoria
+- Aparecida do Rio Negro: https://www.aparecidadorionegro.to.gov.br/esic/transparencia/ouvidoria -> https://www.aparecidadorionegro.to.gov.br/transparencia/ouvidoria
+- Aragominas: https://aragominas.to.gov.br/wp-content/uploads/2017/04/ouvidoria.jpg -> https://aragominas.to.gov.br/ouvidoria/
+- Arapoema: http://www.arapoema.to.gov.br/Transparencia/Ouvidoria/Informacao/acessoainformacao/ouvidoria/sic/ouvidoria -> http://www.arapoema.to.gov.br/transparencia/ouvidoria
+- Arraias: http://www.arraias.to.gov.br/transparencia/Ouvidoria/Informacao/acessoainformacao/ouvidoria/sic/ouvidoria -> http://www.arraias.to.gov.br/transparencia/ouvidoria
+- Babaçulândia: https://www.babaculandia.to.gov.br/transparencia/ouvidoria/acessoainformacao/ouvidoria/sic/ouvidoria -> https://www.babaculandia.to.gov.br/transparencia/ouvidoria
+- Barrolândia: https://barrolandia.megasofttransparencia.com.br/index.jsf/transparencia/ouvidoria/acessoainformacao/ouvidoria/sic/ouvidoria -> https://barrolandia.megasofttransparencia.com.br/transparencia/ouvidoria
+- Bom Jesus do Tocantins: https://bomjesusdotocantins.megasofttransparencia.com.br/bomjesusdotocantins-transparencia/transparencia/index.xhtml/acessoainformacao/ouvidoria/sic/ouvidoria -> https://bomjesusdotocantins.megasofttransparencia.com.br/transparencia/ouvidoria
+- Cachoeirinha: https://cachoeirinha.to.gov.br/index.php/transparencia/ouvidoria -> https://cachoeirinha.to.gov.br/transparencia/ouvidoria
+- Campos Lindos: https://camposlindos.megasofttransparencia.com.br/index.jsf/acessoainformacao/ouvidoria/sic/ouvidoria -> https://camposlindos.megasofttransparencia.com.br/transparencia/ouvidoria
+- Caseara: https://caseara.megasofttransparencia.com.br/index.jsf/acessoainformacao/ouvidoria/sic/ouvidoria -> https://caseara.megasofttransparencia.com.br/transparencia/ouvidoria
+- Centenário: https://www.centenario.to.gov.br/transparencia/ouvidoria/acessoainformacao/ouvidoria/sic/ouvidoria -> https://www.centenario.to.gov.br/transparencia/ouvidoria
+- Chapada de Areia: http://chapadadeareia.to.gov.br/ouvidoria/ -> https://chapadadeareia.to.gov.br/transparencia/ouvidoria
+- Chapada de Natividade: https://chapadadanatividade.megasofttransparencia.com.br/index.jsf/transparencia/ouvidoria/acessoainformacao/ouvidoria/sic/ouvidoria -> https://chapadadanatividade.megasofttransparencia.com.br/transparencia/ouvidoria
+- Combinado: https://combinado.megasofttransparencia.com.br/combinado-transparencia/transparencia/index.xhtml/acessoainformacao/ouvidoria/sic/ouvidoria -> https://combinado.megasofttransparencia.com.br/transparencia/ouvidoria
+- Conceição do Tocantins: https://conceicaodotocantins.megasofttransparencia.com.br/conceicaodotocantins-transparencia/transparencia/index.xhtml/transparencia/ouvidoria/acessoainformacao/ouvidoria/sic/ouvidoria -> https://conceicaodotocantins.megasofttransparencia.com.br/transparencia/ouvidoria
+- Couto Magalhães: https://coutodemagalhaes.megasofttransparencia.com.br/coutodemagalhaes-transparencia/transparencia/index.xhtml/acessoainformacao/ouvidoria/sic/ouvidoria -> https://coutodemagalhaes.megasofttransparencia.com.br/transparencia/ouvidoria
+- Crixás do Tocantins: https://crixas.to.gov.br/ouvidoria/ -> https://crixas.to.gov.br/transparencia/ouvidoria/
+- Darcinópolis: https://darcinopolis.megasofttransparencia.com.br/darcinopolis-transparencia/transparencia/index.xhtml/acessoainformacao/ouvidoria/sic/ouvidoria -> https://darcinopolis.megasofttransparencia.com.br/transparencia/ouvidoria
+- Dianópolis: https://dianopolis.megasofttransparencia.com.br/dianopolis-transparencia/transparencia/index.xhtml/acessoainformacao/ouvidoria/sic/ouvidoria -> https://dianopolis.megasofttransparencia.com.br/transparencia/ouvidoria
+- Divinópolis: https://www.divinopolis.to.gov.br/transparencia/ouvidoria/acessoainformacao/ouvidoria/sic/ouvidoria -> https://www.divinopolis.to.gov.br/transparencia/ouvidoria
+- Fátima: https://www.fatima.to.gov.br/acesso-informacao/ouvidoria/ -> https://www.fatima.to.gov.br/ouvidoria
+- Filadélfia: http://www.filadelfia.to.gov.br/Transparencia/Ouvidoria/Informacao/acessoainformacao/ouvidoria/sic/ouvidoria -> http://www.filadelfia.to.gov.br/transparencia/ouvidoria
+- Fortaleza do Tabocão: https://tabocao.megasofttransparencia.com.br/fortalezadotabocao-transparencia/transparencia/index.xhtml/transparencia/ouvidoria/acessoainformacao/ouvidoria/sic/ouvidoria -> https://tabocao.megasofttransparencia.com.br/transparencia/ouvidoria
+- Goianorte: https://goianorte.megasofttransparencia.com.br/goianorte-transparencia/acesso-a-informacao/index.xhtml/transparencia/ouvidoria/acessoainformacao/ouvidoria/sic/ouvidoria -> https://goianorte.megasofttransparencia.com.br/transparencia/ouvidoria
+- Goiatins: https://www.fenix.com.br/pdtr/index.php/pdtr/filter/transparencia/ouvidoria/acessoainformacao/ouvidoria/sic/ouvidoria -> https://www.fenix.com.br/transparencia/ouvidoria
+- Guaraí: https://guarai.megasofttransparencia.com.br/guarai-transparencia/transparencia/index.xhtml/transparencia/ouvidoria/acessoainformacao/ouvidoria/sic/ouvidoria -> https://guarai.megasofttransparencia.com.br/transparencia/ouvidoria
+- Itacajá: https://itacaja.megasofttransparencia.com.br/index.jsf/transparencia/ouvidoria/acessoainformacao/ouvidoria/sic/ouvidoria -> https://itacaja.megasofttransparencia.com.br/transparencia/ouvidoria
+- Itaguatins: https://www.itaguatins.to.gov.br/ops/404 -> https://www.itaguatins.to.gov.br/ouvidoria
+- Itaporã: https://itaporadotocantins.megasofttransparencia.com.br/itaporadotocantins-transparencia/transparencia/index.xhtml/acessoainformacao/ouvidoria/sic/ouvidoria -> https://itaporadotocantins.megasofttransparencia.com.br/transparencia/ouvidoria
+- Lagoa da Confusão: https://www.lagoadaconfusao.to.gov.br/transparencia/ouvidoria/acessoainformacao/ouvidoria/sic/ouvidoria -> https://www.lagoadaconfusao.to.gov.br/transparencia/ouvidoria
+- Lajeado: https://www.lajeado.to.gov.br/transparencia/ouvidoria/acessoainformacao/ouvidoria/sic/ouvidoria -> https://www.lajeado.to.gov.br/transparencia/ouvidoria
+- Lavandeira: http://www.lavandeira.to.gov.br/ouvidoria/projeto_cadastro/index.php -> http://www.lavandeira.to.gov.br/transparencia/ouvidoria
+- Luzinópolis: https://www.fenix.com.br/pdtr/index.php/pdtr/filter/acessoainformacao/ouvidoria/sic/ouvidoria -> https://www.fenix.com.br/transparencia/ouvidoria
+- Miracema: https://miracemadotocantins.megasofttransparencia.com.br/miracemadotocantins-transparencia/transparencia/index.xhtml/transparencia/ouvidoria/acessoainformacao/ouvidoria/sic/ouvidoria -> https://miracemadotocantins.megasofttransparencia.com.br/transparencia/ouvidoria
+- Miranorte: https://miranorte.megasofttransparencia.com.br/miranorte-transparencia/transparencia/index.xhtml/ouvidoria -> https://miranorte.megasofttransparencia.com.br/transparencia/ouvidoria
+- Monte do Carmo: https://www.montedocarmo.to.gov.br/faleconosco/transparencia/ouvidoria/acessoainformacao/ouvidoria/sic/ouvidoria -> https://www.montedocarmo.to.gov.br/transparencia/ouvidoria
+- Monte Santo: https://montesantodotocantins.megasofttransparencia.com.br/montesantodotocantins-transparencia/transparencia/index.xhtml/acessoainformacao/ouvidoria/sic/ouvidoria -> https://montesantodotocantins.megasofttransparencia.com.br/transparencia/ouvidoria
+- Muricilândia: https://www.muricilandia.to.gov.br/ops/404 -> https://www.muricilandia.to.gov.br/ouvidoria
+- Nova Olinda: https://novaolinda.megasofttransparencia.com.br/novaolinda-transparencia/transparencia/index.xhtml/acessoainformacao/ouvidoria/sic/ouvidoria -> https://novaolinda.megasofttransparencia.com.br/transparencia/ouvidoria
+- Novo Acordo: http://www.novoacordo.to.gov.br/transparencia/ouvidoria/ -> https://www.novoacordo.to.gov.br/ouvidoria
+- Novo Alegre: http://www.novoalegre.to.gov.br/ouvidoria/projeto_cadastro/index.php -> http://www.novoalegre.to.gov.br/transparencia/ouvidoria
+- Novo Jardim: https://novojardim.megasofttransparencia.com.br/novojardim-transparencia/transparencia/index.xhtml/transparencia/ouvidoria/acessoainformacao/ouvidoria/sic/ouvidoria -> https://novojardim.megasofttransparencia.com.br/transparencia/ouvidoria
+- Palmeirante: https://www.palmeirante.to.gov.br/ops/404 -> https://www.palmeirante.to.gov.br/ouvidoria
+- Palmeirópolis: https://palmeiropolis.megasofttransparencia.com.br/palmeiropolis-transparencia/transparencia/index.xhtml/transparencia/ouvidoria/acessoainformacao/ouvidoria/sic/ouvidoria -> https://palmeiropolis.megasofttransparencia.com.br/transparencia/ouvidoria
+- Paraíso do Tocantins: http://www.paraiso.to.gov.br/Contato/Ouvidoria/Informacao/ -> https://paraiso.to.gov.br/ouvidoria/
+- Pindorama: https://www.pindoramadotocantins.to.leg.br/transparencia/ouvidoria/acessoainformacao/ouvidoria/sic/ouvidoria -> https://www.pindoramadotocantins.to.leg.br/transparencia/ouvidoria
+- Ponte Alta do Bom Jesus: http://www.pontealtadobomjesus.to.gov.br/Transparencia/Ouvidoria/Informacao/ -> http://www.pontealtadobomjesus.to.gov.br/transparencia/ouvidoria
+- Praia Norte: https://praianorte.to.gov.br/index.php/ouvidoria -> https://praianorte.to.gov.br/transparencia/ouvidoria
+- Presidente Kennedy: https://esic.portyx.com.br/ouvidoria/?codeDB=57 -> https://presidentekennedy.megasofttransparencia.com.br/transparencia/ouvidoria
+- Pugmil: https://www.pugmil.to.gov.br/Home-Ouvidoria/acessoainformacao/ouvidoria/sic/ouvidoria -> https://www.pugmil.to.gov.br/transparencia/ouvidoria
+- Recursolândia: https://recursolandia.megasofttransparencia.com.br/recursolandia-transparencia/transparencia/index.xhtml/transparencia/ouvidoria/acessoainformacao/ouvidoria/sic/ouvidoria -> https://recursolandia.megasofttransparencia.com.br/transparencia/ouvidoria
+- Riachinho: https://www.riachinho.to.gov.br/index.php/transparencia/ouvidoria -> https://www.riachinho.to.gov.br/transparencia/ouvidoria
+- Rio Sono: http://www.riosono.to.gov.br/ouvidoria/ -> https://riosono.to.gov.br/_servicos-online/ouvidoria/
+- Sandolândia: http://www.sandolandia.to.gov.br/Transparencia/Ouvidoria/Informacao/ -> https://sandolandia.to.gov.br/ouvidoria-2/
+- Santa Fé do Araguaia: http://www.santafedoaraguaia.to.gov.br/Transparencia/Ouvidoria/Informacao/acessoainformacao/ouvidoria/sic/ouvidoria -> http://www.santafedoaraguaia.to.gov.br/transparencia/ouvidoria
+- Santa Rosa do Tocantins: https://santarosadotocantins.megasofttransparencia.com.br/santarosadotocantins-transparencia/transparencia/index.xhtml/acessoainformacao/ouvidoria/sic/ouvidoria -> https://santarosadotocantins.megasofttransparencia.com.br/transparencia/ouvidoria
+- Santa Terezinha do Tocantins: https://santaterezinhadotocantins.megasofttransparencia.com.br/santaterezinhadotocantins-transparencia/transparencia/index.xhtml/acessoainformacao/ouvidoria/sic/ouvidoria -> https://santaterezinhadotocantins.megasofttransparencia.com.br/transparencia/ouvidoria
+- São Bento do Tocantins: https://www.fenix.com.br/pdtr/index.php/pdtr/filter/acessoainformacao/ouvidoria/sic/ouvidoria -> https://www.fenix.com.br/transparencia/ouvidoria
+- São Sebastião do Tocantins: https://www.fenix.com.br/pdtr/index.php/pdtr/filter/acessoainformacao/ouvidoria/sic/ouvidoria -> https://www.fenix.com.br/transparencia/ouvidoria
+- São Valério do Tocantins: http://www.saovalerio.to.gov.br/Transparencia/Ouvidoria/Informacao/ -> https://saovalerio.to.gov.br/ouvidoria-voce-tem-voz-ativa-na-gestao-municipal/
+- Silvanópolis: https://www.silvanopolis.to.gov.br/transparencia/ouvidoria/acessoainformacao/ouvidoria/sic/ouvidoria -> https://www.silvanopolis.to.gov.br/transparencia/ouvidoria
+- Taguatinga: https://taguatinga.megasofttransparencia.com.br/e-sic/adm/index.xhtml/transparencia/ouvidoria -> https://taguatinga.megasofttransparencia.com.br/transparencia/ouvidoria
+- Talismã: https://www.talisma.to.gov.br/ops/404 -> https://www.talisma.to.gov.br/ouvidoria
+- Tocantínia: https://tocantinia.megasofttransparencia.com.br/tocantinia-transparencia/transparencia/index.xhtml/acessoainformacao/ouvidoria/sic/ouvidoria -> https://tocantinia.megasofttransparencia.com.br/transparencia/ouvidoria
+- Tocantinópolis: https://www.tocantinopolis.to.gov.br/transparencia/ouvidoria/acessoainformacao/ouvidoria/sic/ouvidoria -> https://www.tocantinopolis.to.gov.br/transparencia/ouvidoria
+- Tupirama: https://www.tupirama.to.gov.br/transparencia/ouvidoria/acessoainformacao/ouvidoria/sic/ouvidoria -> https://www.tupirama.to.gov.br/transparencia/ouvidoria
+- Wanderlândia: https://www.fenix.com.br/transparencia/349/transparencia/ouvidoria/acessoainformacao/ouvidoria/sic/ouvidoria -> https://www.fenix.com.br/transparencia/ouvidoria
+
+## Sem resolução automática
+- Alvorada (portal: (sem portal na CGE))
+- Araguaçu (portal: (sem portal na CGE))
+- Araguaína (portal: https://e-gov.betha.com.br/transparencia/01012-002/recursos.faces?mun=Nu-6bbEJ_Vg=)
+- Augustinópolis (portal: http://www.transparencia.augustinopolis.to.gov.br/)
+- Aurora do Tocantins (portal: (sem portal na CGE))
+- Axixá do Tocantins (portal: https://transparencia.axixa.to.gov.br/)
+- Brasilândia (portal: http://servicos.dattasystem.com.br/to/pm_brasilandia/)
+- Brejinho de Nazaré (portal: http://www.brejinhodenazare.to.gov.br/transparencia/)
+- Buriti do Tocantins (portal: http://www.buriti.to.gov.br/Portal-Transparencia/)
+- Carmolândia (portal: (sem portal na CGE))
+- Cristalândia (portal: http://www.cristalandia.to.gov.br/transparencia/portal-transparencia/)
+- Dueré (portal: http://www.nucleogov.com.br/duere/)
+- Formoso do Araguaia (portal: http://www.formosodoaraguaia.to.gov.br/Transparencia/)
+- Ipueiras (portal: https://servicos.dattasystem.com.br/to/pm_ipueiras/)
+- Jaú do Tocantins (portal: (sem portal na CGE))
+- Maurilândia (portal: http://transparencia.maurilandia.to.gov.br/)
+- Natividade (portal: (sem portal na CGE))
+- Palmeiras do Tocantins (portal: http://www.palmeirasdotocantins.to.gov.br/portal-da-transparencia/)
+- Paranã (portal: https://transparencia.parana.to.gov.br/)
+- Pau D'árco (portal: http://www.paudarco.to.gov.br/Transparencia/)
+- Pequizeiro (portal: https://servicos.dattasystem.com.br/to/pm_pequizeiro/)
+- Pium (portal: http://www.pium.to.gov.br/transparencia/)
+- Ponte Alta do Tocantins (portal: http://servicos.dattasystem.com.br/to/pm_pontealta/)
+- Porto Alegre do Tocantins (portal: (sem portal na CGE))
+- Porto Nacional (portal: (sem portal na CGE))
+- Sampaio (portal: http://sampaio.to.gov.br/portal-da-transparencia/)
+- Santa Rita do Tocantins (portal: http://transparencia.santarita.to.gov.br/)
+- São Félix do Tocantins (portal: http://www.saofelix.to.gov.br/transparencia/)
+- São Miguel do Tocantins (portal: http://servicos.dattasystem.com.br/to/pm_saomiguel/)
+- São Salvador do Tocantins (portal: (sem portal na CGE))
+- Sítio Novo (portal: (sem portal na CGE))
+- Sucupira (portal: https://servicos.dattasystem.com.br/to/pm_sucupira/)
+- Xambioá (portal: (sem portal na CGE))

@@ -1,69 +1,35 @@
 import axios from 'axios';
 
-// O domínio principal do portal mudou para sistema.gov.br, mas a API parece ainda responder em gestao.gov.br
-const OBRASGOV_BASE = 'https://api.obrasgov.gestao.gov.br/obrasgov/api';
-const UF = 'TO';
-const PAGE_SIZE = 100;
+// O portal "pesquisa aberta" usa o cipi-backend (mesmo host do frontend).
+// Esse endpoint retorna a lista completa de projetos por UF + situação.
+const CIPI_BACKEND_BASE = 'https://obrasgov.sistema.gov.br/cipi-backend/api';
+// idUf do Tocantins no cipi-backend
+const TO_UF_ID = 17;
+// idSituacao "Em execução" no cipi-backend
+const EM_EXECUCAO_SITUACAO_ID = 3;
 const MAX_RETRIES = 3;
 const RETRY_DELAY_MS = 2000;
 const CACHE_TTL_MS = 5 * 60 * 1000; // 5 minutos de cache
 
 // Cache de resultados para evitar chamadas repetidas ao governo
-let projectsCache: { data: ObrasGovProjeto[]; timestamp: number } | null = null;
-const geoCache = new Map<string, { latitude: number; longitude: number } | null>();
+let projectsCache: { data: CipiProjetoPesquisa[]; timestamp: number } | null = null;
 
 // Promessa para evitar múltiplas chamadas simultâneas (Singleton Promise)
-let currentSyncPromise: Promise<ObrasGovProjeto[]> | null = null;
+let currentSyncPromise: Promise<CipiProjetoPesquisa[]> | null = null;
 
 // Coordenadas padrão para o centro do Tocantins
 const DEFAULT_COORDS = { latitude: -10.184, longitude: -48.3336 };
 
 // ========== Interfaces ==========
 
-interface ObrasGovProjeto {
-  idUnico: string;
-  nome: string;
-  cep: string | null;
-  endereco: string | null;
-  descricao: string;
-  funcaoSocial: string | null;
-  metaGlobal: string | null;
-  dataInicialPrevista: string | null;
-  dataFinalPrevista: string | null;
-  dataInicialEfetiva: string | null;
-  dataFinalEfetiva: string | null;
-  dataCadastro: string | null;
-  especie: string | null;
-  natureza: string | null;
-  situacao: string;
-  uf: string;
-  populacaoBeneficiada: string | null;
-  descPopulacaoBeneficiada: string | null;
-  dataSituacao: string | null;
-  tomadores: Array<{ nome: string; codigo: number }>;
-  executores: Array<{ nome: string; codigo: number }>;
-  repassadores: Array<{ nome: string; codigo: number }>;
-  eixos: Array<{ id: number; descricao: string }>;
-  tipos: Array<{ id: number; descricao: string; idEixo: number }>;
-  subTipos: Array<{ id: number; descricao: string; idTipo: number }>;
-  fontesDeRecurso: Array<{ origem: string; valorInvestimentoPrevisto: number }>;
-}
-
-interface ObrasGovGeometria {
-  geometriaWkt: string;
-  dataCriacao: string | null;
-  origem: string | null;
-  nomeAreaExecutora: string | null;
-  enderecoAreaExecutora: string | null;
-  cepAreaExecutora: string | null;
-}
-
-interface ObrasGovPageResponse {
-  content: ObrasGovProjeto[];
-  totalElements: number;
-  totalPages: number;
-  number: number;
-  size: number;
+interface CipiProjetoPesquisa {
+  id: string;
+  nomeProjeto: string;
+  orgaoExecutor: string[];
+  pin: string; // WKT POINT (lon lat)
+  naturezaProjeto: string;
+  idUf: number;
+  municipio: string;
 }
 
 export interface ObraOficial {
@@ -105,48 +71,41 @@ async function sleep(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-function inferEsfera(projeto: ObrasGovProjeto): 'Federal' | 'Estadual' | 'Municipal' {
-  const fontes = projeto.fontesDeRecurso || [];
+function inferEsfera(projeto: { orgaoExecutor?: string[] } | any): 'Federal' | 'Estadual' | 'Municipal' {
+  // Compat: a assinatura antiga era baseada no payload detalhado da API antiga.
+  // Nesta versão ao vivo (cipi-backend) inferimos a esfera a partir do executor.
+  const executor = (projeto as any)?.orgaoExecutor
+    ? String(((projeto as any).orgaoExecutor || [])[0] || '').toLowerCase()
+    : '';
 
-  // Check source of funds
-  for (const fonte of fontes) {
-    const origem = (fonte.origem || '').toLowerCase();
-    if (origem.includes('municipal')) return 'Municipal';
-    if (origem.includes('estadual')) return 'Estadual';
+  if (
+    executor.includes('prefeitura')
+    || executor.includes('municipio')
+    || executor.includes('município')
+    || executor.includes('fundo municipal')
+  ) {
+    return 'Municipal';
   }
 
-  // Check executores/tomadores for municipal hints
-  const allEntities = [
-    ...projeto.executores.map((e) => e.nome.toLowerCase()),
-    ...projeto.tomadores.map((t) => t.nome.toLowerCase()),
-    ...projeto.repassadores.map((r) => r.nome.toLowerCase()),
-  ];
-
-  for (const entity of allEntities) {
-    if (
-      entity.includes('prefeitura') ||
-      entity.includes('fundo municipal') ||
-      entity.includes('municipio') ||
-      entity.includes('município')
-    ) {
-      return 'Municipal';
-    }
-    if (
-      entity.includes('governo do estado') ||
-      entity.includes('governo estadual') ||
-      entity.includes('secretaria de estado') ||
-      entity.includes('estado do tocantins')
-    ) {
-      return 'Estadual';
-    }
+  if (
+    executor.includes('governo do estado')
+    || executor.includes('governo estadual')
+    || executor.includes('secretaria de estado')
+    || executor.includes('estado do tocantins')
+  ) {
+    return 'Estadual';
   }
 
   return 'Federal';
 }
 
-function inferCidade(projeto: ObrasGovProjeto): string {
-  // Try to extract city from the project name or description
-  const texto = `${projeto.nome} ${projeto.descricao} ${projeto.funcaoSocial || ''}`.toLowerCase();
+function inferCidade(projeto: { nomeProjeto?: string; municipio?: string } | any): string {
+  const municipio = String((projeto as any)?.municipio || '').trim();
+  if (municipio) return municipio;
+
+  // Try to extract city from the project name or municipality
+  const nomeProjeto = String((projeto as any)?.nomeProjeto || (projeto as any)?.nome || '');
+  const texto = `${nomeProjeto} ${municipio}`.toLowerCase();
 
   const cidadesTocantins = [
     'Palmas', 'Araguaína', 'Gurupi', 'Porto Nacional', 'Paraíso do Tocantins',
@@ -163,16 +122,6 @@ function inferCidade(projeto: ObrasGovProjeto): string {
   for (const cidade of cidadesTocantins) {
     if (texto.includes(cidade.toLowerCase())) {
       return cidade;
-    }
-  }
-
-  // Try tomadores/executores for municipal entities
-  for (const entity of [...projeto.tomadores, ...projeto.executores]) {
-    const nome = entity.nome;
-    for (const cidade of cidadesTocantins) {
-      if (nome.toLowerCase().includes(cidade.toLowerCase())) {
-        return cidade;
-      }
     }
   }
 
@@ -280,11 +229,22 @@ export class ObraSyncService {
 
     try {
       currentSyncPromise = (async () => {
-        const response = await this.fetchWithRetry<ObrasGovPageResponse>(
-          `${OBRASGOV_BASE}/projeto-investimento`,
-          { uf: UF, page: 0, size: PAGE_SIZE },
+        const response = await this.postWithRetry<CipiProjetoPesquisa[]>(
+          `${CIPI_BACKEND_BASE}/public/pesquisa-aberta-projetos`,
+          {
+            idsRepassadores: [],
+            idsEixos: [],
+            idsTipos: [],
+            idsSubtipos: [],
+            idsSituacoes: [EM_EXECUCAO_SITUACAO_ID],
+            idsTipoPpa: [],
+            idsRps: [],
+            idsUfs: TO_UF_ID,
+            idsExecutores: [],
+          },
         );
-        return response.content || [];
+
+        return Array.isArray(response) ? response : [];
       })();
 
       const allProjetos = await currentSyncPromise;
@@ -306,48 +266,41 @@ export class ObraSyncService {
     }
   }
 
-  private async processarProjetos(allProjetos: ObrasGovProjeto[], params: any): Promise<{ data: any[]; total: number }> {
+  private async processarProjetos(allProjetos: CipiProjetoPesquisa[], params: any): Promise<{ data: any[]; total: number }> {
     this.stats.fetched = allProjetos.length;
 
-    // 2. Filter out concluded works — user only wants active/in-progress
-    const ativos = allProjetos.filter((p) => {
-      const sit = (p.situacao || '').toLowerCase();
-      return !sit.includes('conclu');
-    });
-    this.stats.ignored = allProjetos.length - ativos.length;
+    // O endpoint já está filtrado para "Em execução".
+    const ativos = allProjetos;
+    this.stats.ignored = 0;
 
-    // 3. Enrich with coordinates
+    // Enrich with coordinates + map para o formato interno
     const obras: ObraOficial[] = [];
     for (const projeto of ativos) {
-      const coords = await this.fetchGeometria(projeto.idUnico);
-      const esfera = inferEsfera(projeto);
-      const cidade = inferCidade(projeto);
-      const valorTotal = (projeto.fontesDeRecurso || []).reduce(
-        (sum, f) => sum + (f.valorInvestimentoPrevisto || 0),
-        0,
-      );
+      const coords = parseWktPoint(String(projeto.pin || ''));
+      const esfera = inferEsfera(projeto as any);
+      const cidade = inferCidade(projeto as any);
 
-      const executor = projeto.executores.length > 0
-        ? projeto.executores[0].nome
-        : (projeto.tomadores.length > 0 ? projeto.tomadores[0].nome : 'Não informado');
+      const executor = Array.isArray(projeto.orgaoExecutor) && projeto.orgaoExecutor.length > 0
+        ? projeto.orgaoExecutor[0]
+        : 'Não informado';
 
       obras.push({
-        id: projeto.idUnico,
-        titulo: projeto.nome,
-        descricao: projeto.descricao || projeto.metaGlobal || projeto.funcaoSocial || '',
+        id: projeto.id,
+        titulo: projeto.nomeProjeto,
+        descricao: '',
         esfera,
-        situacao: projeto.situacao,
-        especie: projeto.especie || 'Obra',
-        endereco: projeto.endereco || `${cidade} - TO`,
+        situacao: 'Em execução',
+        especie: projeto.naturezaProjeto || 'Obra',
+        endereco: `${cidade} - TO`,
         cidade,
         latitude: coords?.latitude ?? DEFAULT_COORDS.latitude,
         longitude: coords?.longitude ?? DEFAULT_COORDS.longitude,
-        dataInicio: projeto.dataInicialEfetiva || projeto.dataInicialPrevista,
-        dataFimPrevista: projeto.dataFinalPrevista,
-        valorInvestimento: valorTotal > 0 ? valorTotal : null,
+        dataInicio: null,
+        dataFimPrevista: null,
+        valorInvestimento: null,
         executor,
-        fonteUrl: buildObraUrl(projeto.idUnico),
-        dataCadastro: projeto.dataCadastro,
+        fonteUrl: buildObraUrl(projeto.id),
+        dataCadastro: null,
       });
     }
 
@@ -430,36 +383,33 @@ export class ObraSyncService {
     throw lastError;
   }
 
-  private async fetchGeometria(idUnico: string): Promise<{ latitude: number; longitude: number } | null> {
-    // Check cache
-    if (geoCache.has(idUnico)) {
-      return geoCache.get(idUnico) || null;
-    }
+  private async postWithRetry<T>(url: string, body: any): Promise<T> {
+    let lastError: any;
 
-    try {
-      const geometrias = await this.fetchWithRetry<ObrasGovGeometria[]>(
-        `${OBRASGOV_BASE}/geometria`,
-        { idUnico },
-      );
+    for (let i = 0; i < MAX_RETRIES; i++) {
+      try {
+        const response = await axios.post<T>(url, body, {
+          timeout: 20000,
+          headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json',
+            'User-Agent': 'ObraClaraBot/2.0 (+https://github.com/Mateussouza011/ObraClara)',
+          },
+        });
+        return response.data;
+      } catch (error: any) {
+        lastError = error;
+        const status = error.response?.status;
+        console.warn(`[ObraSyncService] Tentativa ${i + 1} falhou para POST ${url}: ${status || error.message}`);
 
-      if (Array.isArray(geometrias) && geometrias.length > 0) {
-        for (const geo of geometrias) {
-          if (geo.geometriaWkt) {
-            const coords = parseWktPoint(geo.geometriaWkt);
-            if (coords) {
-              geoCache.set(idUnico, coords);
-              return coords;
-            }
-          }
+        if (status && status < 500) break;
+        if (i < MAX_RETRIES - 1) {
+          await sleep(RETRY_DELAY_MS * (i + 1));
         }
       }
-
-      geoCache.set(idUnico, null);
-      return null;
-    } catch {
-      geoCache.set(idUnico, null);
-      return null;
     }
+
+    throw lastError;
   }
 
   private mapSituacaoToStatus(situacao: string): string {
