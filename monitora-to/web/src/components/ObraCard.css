@@ -85,7 +85,7 @@
 
 .obra-card-content {
   margin-bottom: 0.5rem;
-  background: var(--bg-soft);
+  background: rgba(226, 233, 241, 0.86);
   padding: 0.5rem;
   border-radius: var(--radius-sm);
 }
