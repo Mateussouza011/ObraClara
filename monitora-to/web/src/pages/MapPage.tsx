@@ -20,7 +20,7 @@ export function MapPage() {
 
   const [obrasSelecionada, setObraSelecionada] = useState<string | null>(null);
   const [ordenacao, setOrdenacao] = useState<'distancia' | 'titulo'>('distancia');
-  const [statusFiltro, setStatusFiltro] = useState<string>('TODOS');
+  const [statusFiltro] = useState<string>('EM_EXECUCAO');
   const [esferaFiltro, setEsferaFiltro] = useState<string>('TODOS');
   const [buscaNome, setBuscaNome] = useState('');
 
@@ -69,9 +69,29 @@ export function MapPage() {
                 onChange={(e) => setRaioFiltro(Number(e.target.value))}
                 className="raio-slider"
               />
-              <span className="raio-value-badge">
-                {raioFiltro >= TOCANTINS_WIDE_RADIUS_KM ? 'Todo o TO' : `${raioFiltro} km`}
-              </span>
+              <div className="raio-input-wrapper">
+                <input
+                  type="number"
+                  min={1}
+                  max={TOCANTINS_WIDE_RADIUS_KM}
+                  value={raioFiltro || ''}
+                  onChange={(e) => {
+                    const val = Number(e.target.value);
+                    if (val > TOCANTINS_WIDE_RADIUS_KM) {
+                      setRaioFiltro(TOCANTINS_WIDE_RADIUS_KM);
+                    } else {
+                      setRaioFiltro(val);
+                    }
+                  }}
+                  onBlur={() => {
+                    if (!raioFiltro || raioFiltro < 1) {
+                      setRaioFiltro(1);
+                    }
+                  }}
+                  className="raio-manual-input"
+                />
+                <span className="raio-unit">km</span>
+              </div>
             </div>
           </div>
 
@@ -86,22 +106,6 @@ export function MapPage() {
             >
               <option value="distancia">Proximidade</option>
               <option value="titulo">Ordem Alfabética</option>
-            </select>
-          </div>
-
-          <div className="filter-separator" />
-
-          <div className="filter-item">
-            <label htmlFor="status-select">Situação Atual</label>
-            <select
-              id="status-select"
-              value={statusFiltro}
-              onChange={(e) => setStatusFiltro(e.target.value)}
-            >
-              <option value="TODOS">Todas</option>
-              <option value="EM_EXECUCAO">Em Execução</option>
-              <option value="PLANEJADA">Planejada</option>
-              <option value="PAUSADA">Pausada</option>
             </select>
           </div>
 

@@ -20,7 +20,7 @@
 .navbar-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 0.6rem 2rem;
+  padding: 0.15rem 2rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -45,7 +45,7 @@
 }
 
 .brand-logo {
-  height: 72px;
+  height: 64px;
   width: auto;
   object-fit: contain;
 }
