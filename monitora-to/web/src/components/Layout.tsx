@@ -12,7 +12,8 @@ export function Layout({ children }: LayoutProps) {
       <nav className="navbar">
         <div className="navbar-container">
           <Link to="/" className="navbar-brand">
-            <span className="brand-icon">📍</span> Monitora TO
+            <img src="/logo.png" className="brand-logo" alt="Monitora Tocantins" />
+            <span>Monitora Tocantins</span>
           </Link>
           <ul className="navbar-menu">
             <li>

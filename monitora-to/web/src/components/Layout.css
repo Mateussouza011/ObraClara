@@ -20,7 +20,7 @@
 .navbar-container {
   max-width: 1400px;
   margin: 0 auto;
-  padding: 1rem 2rem;
+  padding: 0.6rem 2rem;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -44,8 +44,10 @@
   transform: scale(1.02);
 }
 
-.brand-icon {
-  font-size: 1.75rem;
+.brand-logo {
+  height: 72px;
+  width: auto;
+  object-fit: contain;
 }
 
 .navbar-menu {

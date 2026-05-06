@@ -22,6 +22,7 @@ export function MapPage() {
   const [ordenacao, setOrdenacao] = useState<'distancia' | 'titulo'>('distancia');
   const [statusFiltro, setStatusFiltro] = useState<string>('TODOS');
   const [esferaFiltro, setEsferaFiltro] = useState<string>('TODOS');
+  const [buscaNome, setBuscaNome] = useState('');
 
   const obrasOrdenadas = obterObraOrdenada(ordenacao);
 
@@ -43,9 +44,13 @@ export function MapPage() {
       const statusOk = statusFiltro === 'TODOS' || obra.status === statusFiltro;
       const esferaOk = esferaFiltro === 'TODOS' || obra.esfera === esferaFiltro;
       
-      return noRaio && statusOk && esferaOk;
+      const nomeOk = !buscaNome || 
+        obra.titulo.toLowerCase().includes(buscaNome.toLowerCase()) || 
+        (obra.bairro && obra.bairro.toLowerCase().includes(buscaNome.toLowerCase()));
+      
+      return noRaio && statusOk && esferaOk && nomeOk;
     });
-  }, [localizacao, obrasOrdenadas, raioFiltro, statusFiltro, esferaFiltro]);
+  }, [localizacao, obrasOrdenadas, raioFiltro, statusFiltro, esferaFiltro, buscaNome]);
 
   return (
     <Layout>
@@ -141,6 +146,21 @@ export function MapPage() {
           <div className="sidebar-header">
             <h2>Lista de Obras</h2>
             <p className="sidebar-subtitle">Tocantins em Foco</p>
+            
+            <div className="sidebar-search">
+              <input
+                type="text"
+                placeholder="Buscar obra por nome ou bairro..."
+                value={buscaNome}
+                onChange={(e) => setBuscaNome(e.target.value)}
+                className="search-input"
+              />
+              {buscaNome && (
+                <button className="search-clear-btn" onClick={() => setBuscaNome('')}>
+                  ✕
+                </button>
+              )}
+            </div>
           </div>
 
           {error && <div className="error-message">{error}</div>}
