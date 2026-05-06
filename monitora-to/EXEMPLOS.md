@@ -367,13 +367,13 @@ docker run -p 3000:3000 \
   monitora-to-api:latest
 ```
 
-### Com docker-compose (recomendado)
+### Com docker compose (recomendado)
 ```bash
-docker-compose build
-docker-compose up -d
+docker compose build
+docker compose up -d
 
 # Verificar logs
-docker-compose logs -f api
+docker compose logs -f api
 ```
 
 ---

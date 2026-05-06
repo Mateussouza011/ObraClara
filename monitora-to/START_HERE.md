@@ -1,4 +1,4 @@
-# 👋 BEM-VINDO AO MONITORA PALMAS!
+# 👋 BEM-VINDO AO MONITORA TO!
 
 ```
 ╔═══════════════════════════════════════════════════════════════╗
@@ -25,12 +25,12 @@ ou abra em seu editor preferido.
 
 ### 2️⃣ Inicie Tudo (5 min)
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 ### 3️⃣ Teste
 ```bash
-curl http://localhost:3000/health
+curl http://127.0.0.1:3000/health
 # Esperado: {"status":"ok","timestamp":"..."}
 ```
 
@@ -105,8 +105,8 @@ monitora-to/
 ├─────────────────────────────────────────┤
 │                                         │
 │ A) Rodar a aplicação AGORA ⚡          │
-│    → docker-compose up -d               │
-│    → curl http://localhost:3000/health  │
+│    → docker compose up -d               │
+│    → curl http://127.0.0.1:3000/health  │
 │                                         │
 │ B) Entender a arquitetura 🎨            │
 │    → Leia: MAPA_MENTAL.md               │
@@ -132,21 +132,21 @@ monitora-to/
 ### Terminal (primeiras 10 minutos)
 ```bash
 # Inicia tudo
-docker-compose up -d
+docker compose up -d
 
 # Aguarda ~30 segundos
 
 # Verifica se está rodando
-docker-compose ps
+docker compose ps
 
 # Ver logs se algo falhar
-docker-compose logs api
+docker compose logs api
 
 # Testar API
-curl http://localhost:3000/health
+curl http://127.0.0.1:3000/health
 
 # Parar tudo
-docker-compose down
+docker compose down
 ```
 
 ### VS Code
@@ -167,7 +167,7 @@ Total time: ~2 horas para entender tudo
 ├─ 5 min: QUICKSTART.md
 ├─ 10 min: MAPA_MENTAL.md
 ├─ 20 min: README.md
-├─ 30 min: DESARROLLO.md
+├─ 30 min: DEVELOPMENT.md
 ├─ 45 min: EXEMPLOS.md
 └─ Explore código no VS Code
 ```
@@ -179,16 +179,18 @@ Total time: ~2 horas para entender tudo
 ### Docker não inicia?
 ```bash
 # Ver logs detalhados
-docker-compose logs
+docker compose logs
 
 # Limpar tudo e recomeçar
-docker-compose down -v
-docker-compose up -d
+docker compose down -v
+docker compose up -d
 ```
 
 ### Porta em uso?
 ```bash
-# Mudar em .env ou docker-compose.yml
+# Mudar a porta publicada no host via monitora-to/.env (use como base: monitora-to/.env.example)
+# Ex:
+#   HOST_API_PORT=3001
 lsof -i :3000  # ver o que está usando
 kill -9 <PID>  # matar processo
 ```
@@ -258,7 +260,7 @@ Ao trabalhar com este código, você aprenderá:
 │                                      │
 │  ou                                  │
 │                                      │
-│  docker-compose up -d               │
+│  docker compose up -d               │
 │                                      │
 │  Let's code! 🚀                     │
 └──────────────────────────────────────┘

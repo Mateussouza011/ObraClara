@@ -29,8 +29,9 @@
                │
                ▼
          ┌──────────────────────────┐
-         │ docker-compose up -d     │
-         │ curl /health             │
+         │ docker compose up -d     │
+         │ curl 127.0.0.1:<P>/health │
+         │ porta = HOST_API_PORT    │
          │ code . (abrir projeto)   │
          └────────────┬─────────────┘
                       │
@@ -133,8 +134,8 @@ ENTREGA_FINAL     ✅ │  Qualquer   │ Checklist de tudo
 ```
 DAY 1 (2 HORAS)
 ├─ Ler: PROXIMO_PASSO.md (10 min)
-├─ Rodar: docker-compose up -d (5 min)
-├─ Testar: curl /health (2 min)
+├─ Rodar: docker compose up -d (5 min)
+├─ Testar: curl 127.0.0.1:<P>/health (2 min)
 ├─ Ler: MAPA_MENTAL.md (10 min)
 ├─ Ler: QUICKSTART.md (5 min)
 └─ Explorar pastas no VS Code (1h+)
@@ -203,11 +204,11 @@ VERIFICAR (30 MIN)
 
 ```
 T=0 min   ➜ Abre: PROXIMO_PASSO.md
-T=5 min   ➜ Executa: docker-compose up -d  
+T=5 min   ➜ Executa: docker compose up -d  
 T=10 min  ➜ Pensa: Vou ler o mapa ou o quick?
           │ SIM visual learner? → MAPA_MENTAL.md
           │ NAO coda logo?     → QUICKSTART.md
-T=20 min  ➜ Terminal: curl /health ✅
+T=20 min  ➜ Terminal: curl 127.0.0.1:<P>/health ✅
 T=30 min  ➜ Abre VS Code com projeto
 T=60 min  ➜ Lê: README.md (overview)
 T=90 min  ➜ Entende: Primeira arquitetura
@@ -233,7 +234,7 @@ T=2h      ➜ PRONTO PARA CODAR!
 │  └─ Padrões MVVM vs Clean Arch             │
 │                                             │
 │ QUICKSTART.md                              │
-│  └─ Docker-compose setup                   │
+│  └─ Docker compose setup                   │
 │  └─ API testing basics                     │
 │  └─ Common fixes                           │
 │                                             │
@@ -277,7 +278,7 @@ START HERE
     ├─ Quero rodar RÁPIDO
     │   └─→ PROXIMO_PASSO.md
     │       └─→ QUICKSTART.md
-    │           └─→ (docker-compose up -d)
+    │           └─→ (docker compose up -d)
     │
     ├─ Quero VISUALIZAR
     │   └─→ MAPA_MENTAL.md
@@ -299,7 +300,7 @@ START HERE
     └─ Quero REFERÊNCIA
         ├─→ INDEX.md (tudo linkado)
         ├─→ EXEMPLOS.md (código)
-        └─→ DESENVOLVIMENTO.md (patterns)
+        └─→ DEVELOPMENT.md (patterns)
 ```
 
 ---

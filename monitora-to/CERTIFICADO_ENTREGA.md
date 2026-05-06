@@ -3,7 +3,7 @@
 ```
 ╔═══════════════════════════════════════════════════════════════╗
 ║                                                               ║
-║         ✅ MONITORA PALMAS v1.0 - PRODUCTION READY           ║
+║       ✅ MONITORA TO (PALMAS) v1.0 - PRODUCTION READY        ║
 ║                                                               ║
 ║       Plataforma de Monitoramento Social de Obras             ║
 ║          Palmas, Tocantins - Brasil 🇧🇷                       ║
@@ -262,7 +262,7 @@ COBERTURA
 ### Imediato (Este Sprint)
 ```
 1. ✅ Ler documentação (PROXIMO_PASSO.md)
-2. ✅ Rodar docker-compose up -d
+2. ✅ Rodar docker compose up -d
 3. ✅ Testar /health endpoint
 4. ✅ Explorar estrutura
 5. ⏳ Implementar autenticação JWT (PRIORITY #1)
@@ -292,16 +292,16 @@ COBERTURA
 
 ```bash
 # 1. Navegar para pasta
-cd /home/mateus/Documentos/GitHub/ObraClara/monitora-to
+cd monitora-to
 
 # 2. Ver quick start
 cat PROXIMO_PASSO.md
 
 # 3. Iniciar Docker
-docker-compose up -d
+docker compose up -d
 
 # 4. Testar API
-curl http://localhost:3000/health
+curl http://127.0.0.1:3000/health
 
 # 5. Abrir em VS Code
 code .
@@ -411,7 +411,7 @@ Dentro dos documentos você encontra:
 ║                                                               ║
 ║  Você tem tudo o que precisa para:                            ║
 ║  ✅ Entender a arquitetura                                    ║
-║  ✅ Rodar localmente (docker-compose up -d)                  ║
+║  ✅ Rodar localmente (docker compose up -d)                  ║
 ║  ✅ Começar a programar features novas                        ║
 ║  ✅ Deploy em produção                                        ║
 ║                                                               ║

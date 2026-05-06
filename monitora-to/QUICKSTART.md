@@ -6,29 +6,43 @@
 ```bash
 cd monitora-to
 cp backend/.env.example backend/.env
+
+# (Opcional) se precisar trocar portas no host (ex: 3000/6379 já ocupadas)
+cp .env.example .env
 ```
 
 ### 2. Inicie os Serviços (Docker)
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 **Aguarde 10-15 segundos para BD inicializar...**
 
 ### 3. Configure o Banco
 ```bash
-docker-compose exec api npm run db:migrate
-docker-compose exec api npm run db:seed
+docker compose exec api npm run db:migrate
+docker compose exec api npm run db:seed
 ```
+
+> Se você já tinha criado o banco anteriormente com `prisma db push --force-reset` (ou se mudou migrações/schema), o caminho mais simples é recriar o volume:
+>
+> ```bash
+> docker compose down -v
+> docker compose up -d
+> docker compose exec api npm run db:migrate
+> docker compose exec api npm run db:seed
+> ```
 
 ### 4. Teste a API
 ```bash
 # Health check
-curl http://localhost:3000/health
+curl http://127.0.0.1:3000/health
 
 # Listar obras próximas
-curl "http://localhost:3000/api/obras/proximas?latitude=-10.2&longitude=-48.3&raio=10"
+curl "http://127.0.0.1:3000/api/obras/proximas?latitude=-10.2&longitude=-48.3&raio=10"
 ```
+
+> Se a porta `3000` estiver ocupada no seu host, configure `HOST_API_PORT` em `monitora-to/.env` (veja `monitora-to/.env.example`) e use a porta escolhida no `curl`.
 
 ### 5. Inicie o Mobile (em outro terminal)
 ```bash
@@ -232,16 +246,17 @@ PATCH /api/denuncias/{id}/status
 ### "Erro de conexão BD"
 ```bash
 # Verifique se PostgreSQL iniciou
-docker-compose logs postgres
+docker compose logs postgres
 
 # Aguarde 15s e tente migração novamente
-docker-compose exec api npm run db:migrate
+docker compose exec api npm run db:migrate
 ```
 
 ### "Port 3000 já em uso"
 ```bash
-# Mude a porta em .env
-API_PORT=3001
+# Mude a porta publicada no host em monitora-to/.env
+# (use como base: monitora-to/.env.example)
+HOST_API_PORT=3001
 
 # Ou mate o processo
 lsof -i :3000 | grep LISTEN | awk '{print $2}' | xargs kill -9
@@ -250,8 +265,8 @@ lsof -i :3000 | grep LISTEN | awk '{print $2}' | xargs kill -9
 ### "Imagem não encontrada"
 ```bash
 # Rebuildar containers
-docker-compose build --no-cache
-docker-compose up -d
+docker compose build --no-cache
+docker compose up -d
 ```
 
 ---

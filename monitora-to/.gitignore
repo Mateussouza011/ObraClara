@@ -18,6 +18,7 @@ out/
 
 # Misc
 .DS_Store
+.vite/
 .env
 .env.local
 .env.*.local

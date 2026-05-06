@@ -21,16 +21,16 @@ code QUICKSTART.md
 
 ```bash
 # Certifique-se que você está na pasta do projeto
-cd /home/mateus/Documentos/GitHub/ObraClara/monitora-to
+cd monitora-to
 
 # Inicie Docker
-docker-compose up -d
+docker compose up -d
 
 # Aguarde ~30 segundos...
 sleep 30
 
 # Verifique se tudo está rodando
-docker-compose ps
+docker compose ps
 
 # Esperado:
 # STATUS: healthy (todos os 3 services)
@@ -42,7 +42,7 @@ docker-compose ps
 
 ```bash
 # Em outro terminal
-curl http://localhost:3000/health
+curl http://127.0.0.1:3000/health
 
 # Esperado resposta:
 # {"status":"ok","timestamp":"2026-03-25T..."}
@@ -139,16 +139,16 @@ code MAPA_MENTAL.md
 ### Docker
 ```bash
 # Ver logs
-docker-compose logs -f api
+docker compose logs -f api
 
 # Parar tudo
-docker-compose down
+docker compose down
 
 # Remover volumes (CUIDADO!)
-docker-compose down -v
+docker compose down -v
 
 # Rebuildar
-docker-compose up -d --build
+docker compose up -d --build
 ```
 
 ### Backend
@@ -181,23 +181,27 @@ npm start
 ### "Connection refused on 3000"
 ```bash
 # A API não iniciou. Verifique logs:
-docker-compose logs api
+docker compose logs api
 ```
 
 ### "Port already in use"
 ```bash
-# Algo está usando a porta. Escolha outra:
-docker-compose down  # Para tudo
+# Algo está usando a porta. Opções:
+# 1) Trocar a porta publicada no host via .env (recomendado):
+#    HOST_API_PORT=3001
+#    REDIS_PORT=6380
+# 2) Ou liberar a porta no host:
+docker compose down  # Para tudo
 lsof -i :3000       # Vê o que está usando
 kill -9 <PID>       # Mata o processo
-docker-compose up -d  # Reinicia
+docker compose up -d  # Reinicia
 ```
 
 ### "Database connection failed"
 ```bash
 # Aguarde um pouco mais (DB leva tempo)
 sleep 60
-docker-compose ps  # Vê status
+docker compose ps  # Vê status
 ```
 
 ---

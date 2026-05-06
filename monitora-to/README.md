@@ -4,7 +4,7 @@ Uma aplicação completa para monitoramento de obras de infraestrutura e constru
 
 ## 📋 Índice
 
-- [Estructura do Projeto](#estructura-do-projeto)
+- [Estrutura do Projeto](#estrutura-do-projeto)
 - [Tecnologias](#tecnologias)
 - [Instalação e Setup](#instalação-e-setup)
 - [Arquitetura](#arquitetura)
@@ -13,7 +13,7 @@ Uma aplicação completa para monitoramento de obras de infraestrutura e constru
 
 ---
 
-## 📁 Estructura do Projeto
+## 📁 Estrutura do Projeto
 
 ```
 monitora-to/
@@ -61,8 +61,10 @@ monitora-to/
 │   ├── package.json
 │   └── tsconfig.json
 │
-├── docker-compose.yml              # Orquestração
-└── .env.example                    # Variáveis de ambiente
+├── web/                              # App React (Vite)
+├── scripts/                          # Scripts utilitários
+├── docker-compose.yml                # Orquestração (Postgres + Redis + API)
+└── .env.example                      # Variáveis do Docker Compose (exemplo)
 ```
 
 ---
@@ -118,13 +120,19 @@ nano backend/.env
 
 ```bash
 # Suba PostgreSQL, Redis e a API
-docker-compose up -d
+docker compose up -d
 
 # Verifique os logs
-docker-compose logs -f api
+docker compose logs -f api
+
+# (Primeira vez) aplique migrações e seed dentro do container da API
+docker compose exec api npm run db:migrate
+docker compose exec api npm run db:seed
 ```
 
 ### 3. Rodando Localmente (sem Docker)
+
+> Para rodar **sem Docker**, você precisa ter **PostgreSQL (com PostGIS)** e **Redis** disponíveis localmente e configurar o `backend/.env` apontando para esses serviços.
 
 **Backend:**
 ```bash
@@ -140,6 +148,13 @@ cd mobile
 npm install
 npm run dev       # Inicia Expo
 # Use QR code para conectar no celular ou emulador
+```
+
+**Web:**
+```bash
+cd web
+npm install
+npm run dev       # Inicia em http://localhost:5173
 ```
 
 ---

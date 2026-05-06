@@ -366,7 +366,7 @@ monitora-to/
              ▼
 ┌────────────────────────────────────────┐
 │  Deploy (Docker Compose)               │
-│  docker-compose up -d                  │
+│  docker compose up -d                  │
 └────────────┬───────────────────────────┘
              │
              ▼
@@ -452,7 +452,7 @@ monitora-to/
    - [DEVELOPMENT.md](./DEVELOPMENT.md) (30 min)
 
 2. **Rodar localmente**
-   - `docker-compose up -d`
+        - `docker compose up -d`
    - `npm run dev` (mobile)
 
 3. **Explorar código**

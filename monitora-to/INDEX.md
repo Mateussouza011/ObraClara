@@ -217,7 +217,7 @@ Model-View-ViewModel para mobile:
 
 ### Docker
 ```bash
-docker-compose up -d
+docker compose up -d
 ```
 
 ### Variáveis de Ambiente
@@ -256,13 +256,13 @@ Imagem não found | Rebuild | [QUICKSTART.md](./QUICKSTART.md#-troubleshooting)
 ## ✅ Checklist: Do Zero ao Deploy
 
 - [ ] Ler [QUICKSTART.md](./QUICKSTART.md)
-- [ ] `docker-compose up -d`
+- [ ] `docker compose up -d`
 - [ ] Testar `/health`
 - [ ] Testar POST `/api/denuncias`
 - [ ] `npm run dev` no mobile
 - [ ] Escanear QR code
 - [ ] Explorar o mapa
-- [ ] Ler [DESENVOLVIMENTO.md](./DEVELOPMENT.md)
+- [ ] Ler [DEVELOPMENT.md](./DEVELOPMENT.md)
 - [ ] Entender a arquitetura
 - [ ] Fazer seu primeiro UseCase
 - [ ] Deploy em produção

@@ -426,10 +426,10 @@ Service (API Calls)
 cat QUICKSTART.md
 
 # Inicia infraestrutura
-docker-compose up -d
+docker compose up -d
 
 # Verifica saúde
-curl http://localhost:3000/health
+curl http://127.0.0.1:3000/health
 ```
 
 ### 2️⃣ Entender Arquitetura (30 min)
@@ -501,7 +501,7 @@ npm run build
 ## 📋 CHECKLIST PRÉ-PRODUÇÃO
 
 - [ ] Ler toda documentação
-- [ ] Rodar `docker-compose up -d`
+- [ ] Rodar `docker compose up -d`
 - [ ] Testar endpoints com Postman/Insomnia
 - [ ] Execute `npm test` (backend)
 - [ ] Verificar código com ESLint
@@ -565,7 +565,7 @@ npm run build
 - [x] Port 5432 livre? → `lsof -i :5432`
 - [x] Port 3000 livre? → `lsof -i :3000`
 - [x] VS Code aberto? → Abra este projeto
-- [x] Pronto? → `docker-compose up -d && npm install`
+- [x] Pronto? → `docker compose up -d && npm install`
 
 ---
 
