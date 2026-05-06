@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Layout } from '../components';
 import {
   CANAIS_FEDERAIS,
@@ -12,6 +12,24 @@ import './DenunciasPage.css';
 const DenunciasPage: React.FC = () => {
   const [nivelObra, setNivelObra] = useState<string>('');
   const [cidadeSelecionada, setCidadeSelecionada] = useState<string>('');
+  const [buscaCidade, setBuscaCidade] = useState<string>('');
+
+  const cidadesFiltradas = useMemo(() => {
+    const termo = buscaCidade.trim().toLowerCase();
+    if (!termo) return CIDADES_TO;
+
+    return CIDADES_TO.filter((cidade) =>
+      cidade
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .includes(
+          termo
+            .normalize('NFD')
+            .replace(/[\u0300-\u036f]/g, '')
+        )
+    );
+  }, [buscaCidade]);
 
   const getCanal = (): CanalDenuncia[] => {
     if (nivelObra === 'FEDERAL') return CANAIS_FEDERAIS;
@@ -83,20 +101,31 @@ const DenunciasPage: React.FC = () => {
               {nivelObra === 'MUNICIPAL' && (
                 <div className="wizard-form-group animate-in">
                   <label htmlFor="cidade-obra">Cidade do Tocantins</label>
+                  <input
+                    type="search"
+                    className="cidade-search-input"
+                    placeholder="Buscar cidade..."
+                    value={buscaCidade}
+                    onChange={(e) => setBuscaCidade(e.target.value)}
+                  />
                   <div className="select-wrapper">
                     <select
                       id="cidade-obra"
                       value={cidadeSelecionada}
                       onChange={(e) => setCidadeSelecionada(e.target.value)}
+                      disabled={cidadesFiltradas.length === 0}
                     >
                       <option value="">Selecione a cidade...</option>
-                      {CIDADES_TO.map((cidade) => (
+                      {cidadesFiltradas.map((cidade) => (
                         <option key={cidade} value={cidade}>
                           {cidade}
                         </option>
                       ))}
                     </select>
                   </div>
+                  {cidadesFiltradas.length === 0 && (
+                    <p className="city-search-empty">Nenhuma cidade encontrada para essa busca.</p>
+                  )}
                 </div>
               )}
             </div>

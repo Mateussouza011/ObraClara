@@ -154,6 +154,31 @@
   position: relative;
 }
 
+.cidade-search-input {
+  width: 100%;
+  margin-bottom: 0.7rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: var(--radius-md);
+  background: rgba(248, 251, 253, 0.92);
+  color: var(--ink-strong);
+  font-size: 0.98rem;
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background-color var(--transition-fast);
+}
+
+.cidade-search-input:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--primary-light);
+  background: #f8fbfd;
+}
+
+.city-search-empty {
+  margin: 0.7rem 0 0;
+  color: var(--muted);
+  font-size: 0.92rem;
+}
+
 .select-wrapper select {
   width: 100%;
   padding: 1rem 1.1rem;
@@ -361,6 +386,20 @@ body[data-theme='dark'] .select-wrapper select {
   background-color: rgba(15, 23, 42, 0.88);
   color: #e2e8f0;
   border-color: rgba(148, 163, 184, 0.2);
+}
+
+body[data-theme='dark'] .cidade-search-input {
+  background: rgba(15, 23, 42, 0.88);
+  color: #e2e8f0;
+  border-color: rgba(148, 163, 184, 0.2);
+}
+
+body[data-theme='dark'] .cidade-search-input:focus {
+  background: rgba(15, 23, 42, 0.96);
+}
+
+body[data-theme='dark'] .city-search-empty {
+  color: #94a3b8;
 }
 
 body[data-theme='dark'] .select-wrapper select:focus {

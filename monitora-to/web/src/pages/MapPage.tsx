@@ -23,6 +23,7 @@ export function MapPage() {
   const [statusFiltro] = useState<string>('EM_EXECUCAO');
   const [esferaFiltro, setEsferaFiltro] = useState<string>('TODOS');
   const [buscaNome, setBuscaNome] = useState('');
+  const [buscaIgnoraRaio, setBuscaIgnoraRaio] = useState(false);
 
   const obrasOrdenadas = obterObraOrdenada(ordenacao);
 
@@ -31,7 +32,7 @@ export function MapPage() {
       return [];
     }
 
-    const raioEmKm = raioFiltro;
+    const termoBusca = buscaNome.trim().toLowerCase();
 
     return obrasOrdenadas.filter((obra) => {
       const distancia = calcularDistanciaEmKm(
@@ -40,24 +41,25 @@ export function MapPage() {
         obra.latitude,
         obra.longitude
       );
-      const noRaio = distancia <= raioEmKm;
+
       const statusOk = statusFiltro === 'TODOS' || obra.status === statusFiltro;
       const esferaOk = esferaFiltro === 'TODOS' || obra.esfera === esferaFiltro;
-      
-      const nomeOk = !buscaNome || 
-        obra.titulo.toLowerCase().includes(buscaNome.toLowerCase()) || 
-        (obra.bairro && obra.bairro.toLowerCase().includes(buscaNome.toLowerCase()));
-      
-      return noRaio && statusOk && esferaOk && nomeOk;
+      const nomeOk =
+        !termoBusca ||
+        obra.titulo.toLowerCase().includes(termoBusca) ||
+        (obra.bairro && obra.bairro.toLowerCase().includes(termoBusca));
+      const raioOk = buscaIgnoraRaio || distancia <= raioFiltro;
+
+      return raioOk && statusOk && esferaOk && nomeOk;
     });
-  }, [localizacao, obrasOrdenadas, raioFiltro, statusFiltro, esferaFiltro, buscaNome]);
+  }, [localizacao, obrasOrdenadas, raioFiltro, statusFiltro, esferaFiltro, buscaNome, buscaIgnoraRaio]);
 
   return (
     <Layout>
       <div className="map-page">
         <div className="filter-bar">
           <div className="filter-item filter-slider-container">
-            <label htmlFor="raio-slider">Raio de Busca</label>
+            <label htmlFor="raio-slider">Raio de cobertura</label>
             <div className="slider-controls">
               <input
                 id="raio-slider"
@@ -66,7 +68,10 @@ export function MapPage() {
                 max={TOCANTINS_WIDE_RADIUS_KM}
                 step={1}
                 value={raioFiltro}
-                onChange={(e) => setRaioFiltro(Number(e.target.value))}
+                onChange={(e) => {
+                  setBuscaIgnoraRaio(false);
+                  setRaioFiltro(Number(e.target.value));
+                }}
                 className="raio-slider"
               />
               <div className="raio-input-wrapper">
@@ -76,6 +81,7 @@ export function MapPage() {
                   max={TOCANTINS_WIDE_RADIUS_KM}
                   value={raioFiltro || ''}
                   onChange={(e) => {
+                    setBuscaIgnoraRaio(false);
                     const val = Number(e.target.value);
                     if (val > TOCANTINS_WIDE_RADIUS_KM) {
                       setRaioFiltro(TOCANTINS_WIDE_RADIUS_KM);
@@ -149,19 +155,32 @@ export function MapPage() {
         <div className="sidebar">
           <div className="sidebar-header">
             <h2>Lista de Obras</h2>
-            <p className="sidebar-subtitle">Tocantins em Foco</p>
-            
+            <label className="search-label" htmlFor="obras-search">
+              Buscar por cidade ou bairro
+            </label>
+
             <div className="sidebar-search">
               <input
+                id="obras-search"
                 type="text"
-                placeholder="Buscar obra por nome ou bairro..."
+                placeholder="Digite cidade, bairro ou nome da obra..."
                 value={buscaNome}
-                onChange={(e) => setBuscaNome(e.target.value)}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  setBuscaNome(value);
+                  setBuscaIgnoraRaio(value.trim().length > 0);
+                }}
                 className="search-input"
               />
               {buscaNome && (
-                <button className="search-clear-btn" onClick={() => setBuscaNome('')}>
-                  ✕
+                <button
+                  className="search-clear-btn"
+                  onClick={() => {
+                    setBuscaNome('');
+                    setBuscaIgnoraRaio(false);
+                  }}
+                >
+                  ×
                 </button>
               )}
             </div>
@@ -186,7 +205,7 @@ export function MapPage() {
 
             {obrasNoRaioAtual.length === 0 && !loading && (
               <div className="no-results">
-                <p>Nenhuma obra encontrada neste raio.</p>
+                <p>Nenhuma obra encontrada com os filtros atuais.</p>
               </div>
             )}
           </div>
