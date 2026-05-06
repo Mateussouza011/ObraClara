@@ -67,16 +67,123 @@ export const getCanalMunicipal = (cidade: string): CanalDenuncia => {
     .replace(/[\u0300-\u036f]/g, "") // Remove acentos
     .replace(/\s+/g, ""); // Remove espaços
 
-  // Cidades com portais próprios ou caminhos diferentes
-  const excecoes: Record<string, string> = {
-    "palmas": "https://ouvidoria.palmas.to.gov.br/ouvidoria/manifestacao/",
-    "araguaina": "https://www.araguaina.to.gov.br/ouvidoria-geral",
-    "portonacional": "https://portonacional.to.gov.br/ouvidoria",
-    "gurupi": "https://www.gurupi.to.gov.br/ouvidoria",
-    "araguana": "https://www.araguana.to.gov.br/ouvidoria"
+  const megasoftSuffix = '/ouvidoria-e-e-sic/ouvidoria/reclamacao';
+
+  const megasoftBaseUrls: Record<string, string> = {
+    almas: 'https://almas.megasofttransparencia.com.br',
+    barrolandia: 'https://barrolandia.megasofttransparencia.com.br',
+    bomjesusdotocantins: 'https://bomjesusdotocantins.megasofttransparencia.com.br',
+    camposlindos: 'https://camposlindos.megasofttransparencia.com.br',
+    caseara: 'https://caseara.megasofttransparencia.com.br',
+    chapadadanatividade: 'https://chapadadanatividade.megasofttransparencia.com.br',
+    combinado: 'https://combinado.megasofttransparencia.com.br',
+    conceicaodotocantins: 'https://conceicaodotocantins.megasofttransparencia.com.br',
+    coutomagalhaes: 'https://coutodemagalhaes.megasofttransparencia.com.br',
+    darcinopolis: 'https://darcinopolis.megasofttransparencia.com.br',
+    dianopolis: 'https://dianopolis.megasofttransparencia.com.br',
+    fortalezadotabocao: 'https://tabocao.megasofttransparencia.com.br',
+    goianorte: 'https://goianorte.megasofttransparencia.com.br',
+    guarai: 'https://guarai.megasofttransparencia.com.br',
+    itacaja: 'https://itacaja.megasofttransparencia.com.br',
+    itaporadotocantins: 'https://itaporadotocantins.megasofttransparencia.com.br',
+    miracemadotocantins: 'https://miracemadotocantins.megasofttransparencia.com.br',
+    miranorte: 'https://miranorte.megasofttransparencia.com.br',
+    montesantodotocantins: 'https://montesantodotocantins.megasofttransparencia.com.br',
+    novaolinda: 'https://novaolinda.megasofttransparencia.com.br',
+    novojardim: 'https://novojardim.megasofttransparencia.com.br',
+    palmeiropolis: 'https://palmeiropolis.megasofttransparencia.com.br',
+    recursolandia: 'https://recursolandia.megasofttransparencia.com.br',
+    santarosadotocantins: 'https://santarosadotocantins.megasofttransparencia.com.br',
+    santaterezinhadotocantins: 'https://santaterezinhadotocantins.megasofttransparencia.com.br',
+    taguatinga: 'https://taguatinga.megasofttransparencia.com.br',
+    tocantinia: 'https://tocantinia.megasofttransparencia.com.br',
   };
 
-  const linkPortal = excecoes[lowCidade] || `https://acessoainformacao.${lowCidade}.to.gov.br/cidadao/ouvidoria/denuncia`;
+  const portalEspecifico: Record<string, string> = {
+    almas: `${megasoftBaseUrls.almas}${megasoftSuffix}`,
+    angico: 'https://www.angico.to.gov.br/ouvidoria',
+    aparecidadorionegro: 'https://www.aparecidadorionegro.to.gov.br/transparencia/ouvidoria',
+    aragominas: 'https://aragominas.to.gov.br/ouvidoria/',
+    arapoema: 'http://www.arapoema.to.gov.br/transparencia/ouvidoria',
+    arraias: 'http://www.arraias.to.gov.br/transparencia/ouvidoria',
+    babaculandia: 'https://www.babaculandia.to.gov.br/transparencia/ouvidoria',
+    barrolandia: `${megasoftBaseUrls.barrolandia}${megasoftSuffix}`,
+    bomjesusdotocantins: `${megasoftBaseUrls.bomjesusdotocantins}${megasoftSuffix}`,
+    cachoeirinha: 'https://cachoeirinha.to.gov.br/transparencia/ouvidoria',
+    camposlindos: `${megasoftBaseUrls.camposlindos}${megasoftSuffix}`,
+    caseara: `${megasoftBaseUrls.caseara}${megasoftSuffix}`,
+    centenario: 'https://www.centenario.to.gov.br/transparencia/ouvidoria',
+    chapadadeareia: 'https://chapadadeareia.to.gov.br/transparencia/ouvidoria',
+    chapadadanatividade: `${megasoftBaseUrls.chapadadanatividade}${megasoftSuffix}`,
+    combinado: `${megasoftBaseUrls.combinado}${megasoftSuffix}`,
+    conceicaodotocantins: `${megasoftBaseUrls.conceicaodotocantins}${megasoftSuffix}`,
+    coutomagalhaes: `${megasoftBaseUrls.coutomagalhaes}${megasoftSuffix}`,
+    crixasdotocantins: 'https://crixas.to.gov.br/transparencia/ouvidoria/',
+    darcinopolis: `${megasoftBaseUrls.darcinopolis}${megasoftSuffix}`,
+    dianopolis: `${megasoftBaseUrls.dianopolis}${megasoftSuffix}`,
+    divinopolisdotocantins: 'https://www.divinopolis.to.gov.br/transparencia/ouvidoria',
+    fatima: 'https://www.fatima.to.gov.br/ouvidoria',
+    filadelfia: 'http://www.filadelfia.to.gov.br/transparencia/ouvidoria',
+    fortalezadotabocao: `${megasoftBaseUrls.fortalezadotabocao}${megasoftSuffix}`,
+    goianorte: `${megasoftBaseUrls.goianorte}${megasoftSuffix}`,
+    goiatins: 'https://www.fenix.com.br/transparencia/ouvidoria',
+    guarai: `${megasoftBaseUrls.guarai}${megasoftSuffix}`,
+    itacaja: `${megasoftBaseUrls.itacaja}${megasoftSuffix}`,
+    itaguatins: 'https://www.itaguatins.to.gov.br/ouvidoria',
+    itaporadotocantins: `${megasoftBaseUrls.itaporadotocantins}${megasoftSuffix}`,
+    lagoadaconfusao: 'https://www.lagoadaconfusao.to.gov.br/transparencia/ouvidoria',
+    lajeado: 'https://www.lajeado.to.gov.br/transparencia/ouvidoria',
+    lavandeira: 'http://www.lavandeira.to.gov.br/transparencia/ouvidoria',
+    luzinopolis: 'https://www.fenix.com.br/transparencia/ouvidoria',
+    miracemadotocantins: `${megasoftBaseUrls.miracemadotocantins}${megasoftSuffix}`,
+    miranorte: `${megasoftBaseUrls.miranorte}${megasoftSuffix}`,
+    montedocarmo: 'https://www.montedocarmo.to.gov.br/transparencia/ouvidoria',
+    montesantodotocantins: `${megasoftBaseUrls.montesantodotocantins}${megasoftSuffix}`,
+    muricilandia: 'https://www.muricilandia.to.gov.br/ouvidoria',
+    novaolinda: `${megasoftBaseUrls.novaolinda}${megasoftSuffix}`,
+    novoacordo: 'https://www.novoacordo.to.gov.br/ouvidoria',
+    novoalegre: 'http://www.novoalegre.to.gov.br/transparencia/ouvidoria',
+    novojardim: `${megasoftBaseUrls.novojardim}${megasoftSuffix}`,
+    palmeirante: 'https://www.palmeirante.to.gov.br/ouvidoria',
+    palmeiropolis: `${megasoftBaseUrls.palmeiropolis}${megasoftSuffix}`,
+    paraisodotocantins: 'https://paraiso.to.gov.br/ouvidoria/',
+    pindorama: 'https://www.pindoramadotocantins.to.leg.br/transparencia/ouvidoria',
+    pontealtadobomjesus: 'http://www.pontealtadobomjesus.to.gov.br/transparencia/ouvidoria',
+    prainorte: 'https://praianorte.to.gov.br/transparencia/ouvidoria',
+    presidentekennedy: 'https://presidentekennedy.megasofttransparencia.com.br/transparencia/ouvidoria/ouvidoria-e-e-sic/ouvidoria/reclamacao',
+    pugmil: 'https://www.pugmil.to.gov.br/transparencia/ouvidoria',
+    recursolandia: `${megasoftBaseUrls.recursolandia}${megasoftSuffix}`,
+    riachinho: 'https://www.riachinho.to.gov.br/transparencia/ouvidoria',
+    riosono: 'https://riosono.to.gov.br/_servicos-online/ouvidoria/',
+    sandolandia: 'https://sandolandia.to.gov.br/ouvidoria-2/',
+    santafe: 'http://www.santafedoaraguaia.to.gov.br/transparencia/ouvidoria',
+    santarosadotocantins: `${megasoftBaseUrls.santarosadotocantins}${megasoftSuffix}`,
+    santaterezinhadotocantins: `${megasoftBaseUrls.santaterezinhadotocantins}${megasoftSuffix}`,
+    saobentodotocantins: 'https://www.fenix.com.br/transparencia/ouvidoria',
+    saosebastiaodotocantins: 'https://www.fenix.com.br/transparencia/ouvidoria',
+    saovalerio: 'https://saovalerio.to.gov.br/ouvidoria-voce-tem-voz-ativa-na-gestao-municipal/',
+    silvanopolis: 'https://www.silvanopolis.to.gov.br/transparencia/ouvidoria',
+    taguatinga: `${megasoftBaseUrls.taguatinga}${megasoftSuffix}`,
+    talisma: 'https://www.talisma.to.gov.br/ouvidoria',
+    tocantinia: `${megasoftBaseUrls.tocantinia}${megasoftSuffix}`,
+    tocantinopolis: 'https://www.tocantinopolis.to.gov.br/transparencia/ouvidoria',
+    tupirama: 'https://www.tupirama.to.gov.br/transparencia/ouvidoria',
+    wanderlandia: 'https://www.fenix.com.br/transparencia/ouvidoria',
+  };
+
+  const linkPortal =
+    portalEspecifico[lowCidade] ||
+    (lowCidade === 'palmas'
+      ? 'https://ouvidoria.palmas.to.gov.br/ouvidoria/manifestacao/'
+      : lowCidade === 'araguaina'
+        ? 'https://www.araguaina.to.gov.br/ouvidoria-geral'
+        : lowCidade === 'portonacional'
+          ? 'https://portonacional.to.gov.br/ouvidoria'
+          : lowCidade === 'gurupi'
+            ? 'https://www.gurupi.to.gov.br/ouvidoria'
+            : lowCidade === 'araguana'
+              ? 'https://www.araguana.to.gov.br/ouvidoria'
+              : `https://acessoainformacao.${lowCidade}.to.gov.br/cidadao/ouvidoria/denuncia`);
 
   return {
     nome: `Ouvidoria de ${cidade}`,
