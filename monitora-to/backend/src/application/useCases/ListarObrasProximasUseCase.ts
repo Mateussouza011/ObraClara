@@ -18,8 +18,8 @@ export class ListarObrasProximasUseCase {
   ): Promise<ObraResponseDTO[]> {
     this.validarCoordenadas(latitude, longitude);
 
-    if (raioKm <= 0 || raioKm > 100) {
-      throw new Error('Raio deve estar entre 0 e 100 km');
+    if (raioKm <= 0 || raioKm > 1000) {
+      throw new Error('Raio deve estar entre 0 e 1000 km');
     }
 
     const obras = await this.obraRepository.buscarProximas(latitude, longitude, raioKm);

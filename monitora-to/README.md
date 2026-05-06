@@ -2,14 +2,17 @@
 
 Uma aplicação completa para monitoramento de obras de infraestrutura e construção em Palmas, Tocantins. Permite que moradores acompanhem o progresso das obras, reportem problemas e façam sugestões.
 
+---
+
 ## 📋 Índice
 
 - [Estrutura do Projeto](#estrutura-do-projeto)
 - [Tecnologias](#tecnologias)
-- [Instalação e Setup](#instalação-e-setup)
-- [Arquitetura](#arquitetura)
-- [Como Usar](#como-usar)
-- [Desenvolvimento](#desenvolvimento)
+- [Como Rodar Localmente (Setup)](#como-rodar-localmente-setup)
+- [Arquitetura e Padrões](#arquitetura-e-padrões)
+- [Como Usar (APIs Principais)](#como-usar-apis-principais)
+- [Troubleshooting](#troubleshooting)
+- [Desenvolvimento e Testes](#desenvolvimento-e-testes)
 
 ---
 
@@ -19,52 +22,24 @@ Uma aplicação completa para monitoramento de obras de infraestrutura e constru
 monitora-to/
 ├── backend/                           # API Node.js/TypeScript
 │   ├── src/
-│   │   ├── domain/                   # Camada de Domínio
-│   │   │   ├── entities/            # Entidades principais
-│   │   │   │   ├── Usuario.ts
-│   │   │   │   ├── Obra.ts
-│   │   │   │   ├── Denuncia.ts
-│   │   │   │   └── Geolocation.ts
-│   │   │   └── repositories/        # Interfaces de repositórios
-│   │   ├── application/             # Camada de Aplicação
-│   │   │   ├── useCases/           # Casos de uso (orquestração)
-│   │   │   │   ├── CriarDenunciaUseCase.ts
-│   │   │   │   └── ListarObrasProximasUseCase.ts
-│   │   │   └── dtos/               # Data Transfer Objects
-│   │   └── infrastructure/          # Camada de Infraestrutura
-│   │       ├── http/               # Controllers HTTP
-│   │       ├── persistence/        # Implementações de repositórios
-│   │       └── config/             # Configurações
-│   ├── tests/                       # Testes unitários
-│   ├── prisma/
-│   │   └── schema.prisma           # Schema do banco de dados
-│   ├── Dockerfile
-│   ├── package.json
-│   └── tsconfig.json
+│   │   ├── domain/                    # Entidades e Repositórios (Regras de negócio)
+│   │   ├── application/               # Casos de uso (Orquestração)
+│   │   └── infrastructure/            # Controllers HTTP, Prisma e Serviços Externos
+│   ├── prisma/                        # Schema do banco de dados (PostgreSQL)
+│   └── package.json
 │
-├── mobile/                           # App React Native
+├── web/                               # App Web Frontend (React + Vite)
 │   ├── src/
-│   │   ├── models/                 # Modelos de dados
-│   │   │   ├── Obra.ts
-│   │   │   └── Denuncia.ts
-│   │   ├── viewModels/            # Custom Hooks (MVVM)
-│   │   │   ├── useObraViewModel.ts
-│   │   │   └── useDenunciaViewModel.ts
-│   │   ├── views/                 # Telas (componentes React)
-│   │   │   ├── MapaObrasScreen.tsx
-│   │   │   └── CriarDenunciaScreen.tsx
-│   │   ├── services/              # Serviços (API client)
-│   │   │   └── api.ts
-│   │   ├── components/            # Componentes reutilizáveis
-│   │   ├── utils/                 # Utilitários
-│   │   └── App.tsx               # Ponto de entrada
-│   ├── package.json
-│   └── tsconfig.json
+│   │   ├── models/                    # Interfaces de dados
+│   │   ├── viewModels/                # Hooks customizados
+│   │   ├── views/                     # Componentes e Páginas (Mapa, Denúncias)
+│   │   └── services/                  # Comunicação com a API
+│   └── package.json
 │
-├── web/                              # App React (Vite)
-├── scripts/                          # Scripts utilitários
-├── docker-compose.yml                # Orquestração (Postgres + Redis + API)
-└── .env.example                      # Variáveis do Docker Compose (exemplo)
+├── mobile/                            # App React Native (Expo)
+│   └── src/                           # Estrutura MVVM similar à web
+│
+└── docker-compose.yml                 # Orquestração (Postgres + Redis + API)
 ```
 
 ---
@@ -73,269 +48,153 @@ monitora-to/
 
 ### Backend
 - **Runtime:** Node.js 20+ com TypeScript
-- **Framework:** Express (com estrutura limpa)
+- **Framework:** Express (Clean Architecture)
 - **Banco de Dados:** PostgreSQL com PostGIS (geolocalização)
 - **ORM:** Prisma
-- **Validação:** Zod, class-validator
 - **Cache:** Redis
-- **Autenticação:** JWT
-- **Testes:** Jest
+
+### Web / Frontend
+- **Framework:** React com Vite
+- **Estilos:** Vanilla CSS com variáveis CSS modernas, Glassmorphism, e animações fluidas
+- **Mapas:** Leaflet (react-leaflet)
+- **Estado:** Custom Hooks (MVVM pattern)
 
 ### Mobile
 - **Framework:** React Native com Expo
-- **Linguagem:** TypeScript
-- **Navigator:** React Navigation
-- **Estado:** Custom Hooks (MVVM pattern)
-- **HTTP Client:** Axios
-- **Localização:** Expo Location
-- **Mapas:** react-native-maps
-
-### DevOps
-- **Containerização:** Docker + Docker Compose
-- **Banco:** PostgreSQL 15 + PostGIS
-- **Cache:** Redis 7
+- **Navegação:** React Navigation
 
 ---
 
-## 🚀 Instalação e Setup
+## 🚀 Como Rodar Localmente (Setup)
+
+Você pode rodar o projeto inteiramente via Docker (mais fácil) ou rodar os serviços locais manualmente.
 
 ### Pré-requisitos
 - Node.js 20+
 - Docker e Docker Compose
 - Git
 
-### 1. Clone e Configure
+### 1. Inicializando com Docker Compose (Recomendado para o Backend)
+
+Este comando subirá o Banco de Dados (Postgres com PostGIS), o Redis, e a API em Node.js automaticamente.
 
 ```bash
 cd monitora-to
 
-# Copie o arquivo de ambiente
-cp backend/.env.example backend/.env
+# (Opcional) Copie o arquivo de ambiente para sobrescrever a porta da API caso a 3000 esteja ocupada
+cp .env.example .env
 
-# Configure as variáveis conforme necessário
-nano backend/.env
-```
-
-### 2. Inicie a Infraestrutura
-
-```bash
-# Suba PostgreSQL, Redis e a API
+# Suba os containers em background
 docker compose up -d
 
-# Verifique os logs
-docker compose logs -f api
+# Aguarde 10-15 segundos para o banco inicializar
+```
 
-# (Primeira vez) aplique migrações e seed dentro do container da API
+### 2. Configurando o Banco de Dados
+
+Rode as migrações e o script de seed (para popular os dados iniciais) no contêiner da API:
+
+```bash
 docker compose exec api npm run db:migrate
 docker compose exec api npm run db:seed
 ```
 
-### 3. Rodando Localmente (sem Docker)
+> **Nota:** O backend passará a responder em `http://127.0.0.1:3000` (ou na porta definida em `HOST_API_PORT` no arquivo `.env` da raiz).
 
-> Para rodar **sem Docker**, você precisa ter **PostgreSQL (com PostGIS)** e **Redis** disponíveis localmente e configurar o `backend/.env` apontando para esses serviços.
+### 3. Rodando o Frontend (Web)
 
-**Backend:**
-```bash
-cd backend
-npm install
-npm run db:migrate  # Aplica migrações Prisma
-npm run dev         # Inicia em http://localhost:3000
-```
+Com o backend rodando via Docker, inicie a interface Web localmente para ver o mapa:
 
-**Mobile:**
-```bash
-cd mobile
-npm install
-npm run dev       # Inicia Expo
-# Use QR code para conectar no celular ou emulador
-```
-
-**Web:**
 ```bash
 cd web
 npm install
-npm run dev       # Inicia em http://localhost:5173
+
+# (Opcional) Crie o .env caso a porta do backend não seja a padrão 3000
+# echo "VITE_API_URL=http://localhost:3001" > .env
+
+npm run dev
+# Acesse no navegador em http://localhost:5173 (ou a porta sugerida no terminal)
 ```
+
+### 4. Rodando Localmente sem Docker
+
+Caso prefira não usar o contêiner do backend e queira rodá-lo localmente via `ts-node`:
+
+```bash
+cd backend
+cp .env.example .env
+npm install
+npm run db:migrate
+npm run dev         # Inicia o backend na porta 3000
+```
+*(Necessário ter um PostgreSQL com PostGIS e um Redis rodando localmente no host).*
 
 ---
 
-## 🏛️ Arquitetura
+## 🏛️ Arquitetura e Padrões
 
-### Padrões
-- **Clean Architecture:** Separação em camadas (Domain, Application, Infrastructure)
-- **SOLID:** Princípios de design
-- **MVVM:** No mobile (Models, Views, ViewModels via hooks customizados)
-- **Repository Pattern:** Abstração de dados
-- **Use Cases:** Orquestração de negócio
-
-### Camadas do Backend
-
-```
-┌─────────────────────────────────┐
-│   HTTP Controllers              │ ← Requisições
-└──────────────┬──────────────────┘
-               │
-┌──────────────▼──────────────────┐
-│      Use Cases (Application)    │ ← Lógica de negócio
-└──────────────┬──────────────────┘
-               │
-┌──────────────▼──────────────────┐
-│      Domain (Entidades)         │ ← Regras de negócio
-└──────────────┬──────────────────┘
-               │
-┌──────────────▼──────────────────┐
-│  Repositories (Persistência)    │ ← Dados
-└─────────────────────────────────┘
-```
-
-### Exemplo: UseCase CriarDenúncia
-
-1. **Controller** recebe requisição HTTP
-2. **UseCase** valida e orquestra a operação
-3. **Entidades** aplicam lógica de negócio
-4. **Repositories** persistem no banco
+- **Clean Architecture:** O backend é estritamente separado em camadas lógicas (Domain, Application, Infrastructure).
+- **MVVM:** No frontend (Web e Mobile), a lógica de estado e requisições fica nos *ViewModels* (`hooks`), separando completamente o visual das chamadas à API.
+- **Integração Online:** A listagem de obras se comunica *em tempo real* (via `ObraSyncService`) com o portal oficial federal `ObrasGov` para recuperar dados atualizados do estado do Tocantins.
 
 ---
 
-## 💻 Como Usar
+## 💻 Como Usar (APIs Principais)
 
-### Backend API
-
-#### Listar obras próximas
+### Obras (Sincronizadas com o portal oficial)
 ```bash
-GET /api/obras/proximas?latitude=-10.2&longitude=-48.3&raio=10
+# Listar obras próximas filtradas (o raio em KM define o alcance de busca)
+GET /api/obras/proximas?latitude=-10.2&longitude=-48.3&raio=900
+
+# Buscar obra específica
+GET /api/obras/{id}
 ```
 
-**Resposta:**
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": "obra-1",
-      "titulo": "Asfaltamento na ARSE 14",
-      "bairro": "ARSE 14",
-      "status": "EM_EXECUCAO",
-      "percentualProgresso": 45,
-      "localizacao": {
-        "latitude": -10.21759,
-        "longitude": -48.30251
-      }
-    }
-  ],
-  "total": 1
-}
-```
-
-#### Criar denúncia
+### Denúncias
 ```bash
+# Criar uma denúncia em uma obra
 POST /api/denuncias
 Content-Type: application/json
 
 {
   "usuarioId": "user-123",
   "obraId": "obra-1",
-  "titulo": "Obra atrasada",
-  "descricao": "A obra deveria ter terminado há uma semana",
-  "tipo": "ATRASO",
-  "imagemUrl": "https://..."
+  "titulo": "Obra parada e materiais abandonados",
+  "descricao": "Nenhum trabalhador no local há mais de uma semana.",
+  "tipo": "ATRASO"
 }
 ```
-
-### Mobile App
-
-1. **Abrir app** → Requisita permissão de localização
-2. **Explorar mapa** → Vê obras próximas em tempo real
-3. **Filtrar** → Por distância, status ou bairro
-4. **Denunciar** → Criar denúncia com foto
-5. **Acompanhar** → Ver status das denúncias
 
 ---
 
-## 🔧 Desenvolvimento
+## 🆘 Troubleshooting
 
-### Adicionar novo UseCase
+### 1. "Port 3000 já em uso"
+Se você tentou rodar `docker compose up -d` e acusou erro na porta 3000:
+- Edite o arquivo `.env` na pasta principal `monitora-to` e altere para `HOST_API_PORT=3001` (por exemplo).
+- Edite o arquivo `.env` dentro da pasta `web` apontando para a nova porta do backend: `VITE_API_URL=http://localhost:3001`.
+- Reinicie os containers com `docker compose down` e `docker compose up -d`.
 
-1. **Criar em `src/application/useCases/`:**
-```typescript
-export class MeuNovoUseCaseUseCase {
-  constructor(private repository: IMeuRepository) {}
-  
-  async execute(input: MeuInputDTO): Promise<MeuOutputDTO> {
-    // Lógica aqui
-  }
-}
-```
+### 2. O Frontend só exibe um máximo de 20 obras
+Certifique-se de que o backend que está sendo requisitado pelo frontend é de fato o backend do Docker com a limitação corrigida, e que você expandiu o slider de "Raio de Busca" no site para cobrir todo o estado.
 
-2. **Injetar em controller:**
-```typescript
-const meuUseCase = new MeuNovoUseCaseUseCase(repository);
-```
+### 3. "Erro de Conexão com o BD" (Prisma)
+Ao rodar as migrations, pode ser que o Postgres ainda esteja iniciando. Aguarde mais 10 segundos e execute o `docker compose exec api npm run db:migrate` novamente.
 
-### Adicionar nova View Mobile
+---
 
-1. **Criar em `src/views/MinhaNovaScreen.tsx`:**
-```typescript
-export function MinhaNovaScreen(): JSX.Element {
-  const viewModel = useMeuViewModel();
-  
-  return (
-    <View>
-      {/* Renderização focada em UI */}
-    </View>
-  );
-}
-```
+## 🔧 Desenvolvimento e Testes
 
-2. **Criar hook em `src/viewModels/useMeuViewModel.ts`:**
-```typescript
-export function useMeuViewModel() {
-  // Estado e lógica aqui
-  return { /* ... */ };
-}
-```
-
-### Rodar Testes
+### Rodar Testes no Backend
 
 ```bash
 cd backend
-
-# Testes unitários
-npm test
-
-# Com cobertura
-npm run test:cov
-
-# Em modo watch
-npm run test:watch
+npm test               # Rodar todos os testes (Jest)
+npm run test:watch     # Em modo watch (desenvolvimento)
+npm run test:cov       # Relatório de cobertura
 ```
-
----
-
-## 📍 Referências Geográficas de Palmas
-
-Bairros inclusos:
-- **ARSE 12, 14, 104 Sul**
-- **Aureny III, IV**
-- **Taquaralto**
-- **Centro norte, sul**
-
-Tipos de obras:
-- Asfaltamento
-- Drenagem
-- Construção
-- Iluminação
-- Saneamento
 
 ---
 
 ## 📄 Licença
-
 MIT
-
----
-
-## 👥 Contribuindo
-
-Sinta-se livre para abrir issues e PRs!
-

@@ -33,12 +33,28 @@
 }
 
 .wizard-card {
-  background: white;
-  border-radius: 1.5rem;
-  padding: 3rem;
-  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  background: linear-gradient(to bottom right, #ffffff, #f9fafb);
+  background: var(--surface-glass);
+  backdrop-filter: blur(24px) saturate(180%);
+  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  border-radius: var(--radius-lg);
+  padding: 3.5rem;
+  box-shadow: var(--shadow-lg), var(--shadow-glass);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  position: relative;
+  overflow: hidden;
+}
+
+.wizard-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle at center, var(--primary-light) 0%, transparent 50%);
+  opacity: 0.5;
+  pointer-events: none;
+  z-index: -1;
 }
 
 .wizard-card h2 {
@@ -84,21 +100,23 @@
 .select-wrapper select {
   width: 100%;
   padding: 1rem 1.25rem;
-  border: 2px solid #e5e7eb;
-  border-radius: 1rem;
-  background-color: white;
+  border: 2px solid rgba(148, 163, 184, 0.3);
+  border-radius: var(--radius-md);
+  background-color: rgba(255, 255, 255, 0.7);
   font-size: 1.125rem;
-  color: #1f2937;
+  color: var(--ink-strong);
   appearance: none;
   cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  transition: all var(--transition-fast);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.02);
+  backdrop-filter: blur(8px);
 }
 
 .select-wrapper select:focus {
   outline: none;
-  border-color: #10b981;
-  box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1);
+  border-color: var(--primary);
+  box-shadow: 0 0 0 4px var(--primary-light);
+  background-color: #ffffff;
 }
 
 .select-wrapper::after {
@@ -148,19 +166,39 @@
 .canal-card-item {
   display: flex;
   align-items: center;
-  background: white;
-  border: 1px solid #f3f4f6;
-  border-radius: 1rem;
+  background: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: var(--radius-md);
   padding: 1.5rem;
   gap: 1.5rem;
-  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+  transition: all var(--transition-smooth);
+  box-shadow: var(--shadow-sm);
+  position: relative;
+  overflow: hidden;
+}
+
+.canal-card-item::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 4px;
+  height: 100%;
+  background: var(--secondary);
+  opacity: 0.5;
+  transition: all var(--transition-smooth);
 }
 
 .canal-card-item:hover {
-  border-color: #10b981;
-  box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.1);
+  border-color: var(--secondary-light);
+  box-shadow: var(--shadow-md), 0 0 20px rgba(16, 185, 129, 0.15);
   transform: translateX(8px);
+}
+
+.canal-card-item:hover::before {
+  opacity: 1;
+  width: 6px;
 }
 
 .canal-icon {
@@ -195,21 +233,21 @@
 
 .canal-link-button {
   padding: 0.75rem 1.5rem;
-  background: #111827;
+  background: var(--ink-strong);
   color: white;
   text-decoration: none;
-  border-radius: 0.75rem;
+  border-radius: var(--radius-full);
   font-size: 1rem;
   font-weight: 600;
-  transition: all 0.2s;
+  transition: all var(--transition-fast);
   white-space: nowrap;
-  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  box-shadow: var(--shadow-sm);
 }
 
 .canal-link-button:hover {
-  background: #10b981;
+  background: var(--secondary);
   transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(16, 185, 129, 0.2);
+  box-shadow: var(--shadow-md), 0 0 15px var(--success-light);
 }
 
 .denuncias-info-footer {

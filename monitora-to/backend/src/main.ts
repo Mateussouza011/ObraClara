@@ -73,7 +73,7 @@ app.use('/api', async (req: Request, res: Response, next: NextFunction) => {
   if (req.path === '/obras' || req.path === '/obras/proximas') {
     try {
       const page = parsePositiveInt(req.query.page as string, 1);
-      const limit = parsePositiveInt(req.query.limit as string, 20, 100);
+      const limit = parsePositiveInt(req.query.limit as string, 1000, 2000);
       const sortBy = parseSortBy(req.query.sortBy as string);
       const sortDirection = parseSortDirection(req.query.sortDirection as string);
 

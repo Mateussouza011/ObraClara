@@ -20,6 +20,8 @@ export function MapPage() {
 
   const [obrasSelecionada, setObraSelecionada] = useState<string | null>(null);
   const [ordenacao, setOrdenacao] = useState<'distancia' | 'titulo'>('distancia');
+  const [statusFiltro, setStatusFiltro] = useState<string>('TODOS');
+  const [esferaFiltro, setEsferaFiltro] = useState<string>('TODOS');
 
   const obrasOrdenadas = obterObraOrdenada(ordenacao);
 
@@ -37,9 +39,13 @@ export function MapPage() {
         obra.latitude,
         obra.longitude
       );
-      return distancia <= raioEmKm;
+      const noRaio = distancia <= raioEmKm;
+      const statusOk = statusFiltro === 'TODOS' || obra.status === statusFiltro;
+      const esferaOk = esferaFiltro === 'TODOS' || obra.esfera === esferaFiltro;
+      
+      return noRaio && statusOk && esferaOk;
     });
-  }, [localizacao, obrasOrdenadas, raioFiltro]);
+  }, [localizacao, obrasOrdenadas, raioFiltro, statusFiltro, esferaFiltro]);
 
   return (
     <Layout>
@@ -75,6 +81,38 @@ export function MapPage() {
             >
               <option value="distancia">Proximidade</option>
               <option value="titulo">Ordem Alfabética</option>
+            </select>
+          </div>
+
+          <div className="filter-separator" />
+
+          <div className="filter-item">
+            <label htmlFor="status-select">Situação Atual</label>
+            <select
+              id="status-select"
+              value={statusFiltro}
+              onChange={(e) => setStatusFiltro(e.target.value)}
+            >
+              <option value="TODOS">Todas</option>
+              <option value="EM_EXECUCAO">Em Execução</option>
+              <option value="PLANEJADA">Planejada</option>
+              <option value="PAUSADA">Pausada</option>
+            </select>
+          </div>
+
+          <div className="filter-separator" />
+
+          <div className="filter-item">
+            <label htmlFor="esfera-select">Esfera</label>
+            <select
+              id="esfera-select"
+              value={esferaFiltro}
+              onChange={(e) => setEsferaFiltro(e.target.value)}
+            >
+              <option value="TODOS">Todas</option>
+              <option value="Estadual">Estadual (TO)</option>
+              <option value="Federal">Federal</option>
+              <option value="Municipal">Municipal</option>
             </select>
           </div>
 

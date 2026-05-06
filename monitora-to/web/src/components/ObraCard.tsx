@@ -27,20 +27,40 @@ export function ObraCard({ obra, distancia, onClick }: ObraCardProps) {
     }
   };
 
+  // Helper to convert hex to rgba for light glows
+  const hexToRgba = (hex: string, alpha: number) => {
+    const r = parseInt(hex.slice(1, 3), 16);
+    const g = parseInt(hex.slice(3, 5), 16);
+    const b = parseInt(hex.slice(5, 7), 16);
+    return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+  };
+
+  const statusBaseColor = statusColor(obra.status);
+  const cardStyle = {
+    '--status-color': statusBaseColor,
+    '--status-color-light': hexToRgba(statusBaseColor, 0.2),
+  } as React.CSSProperties;
+
   return (
-    <div className="obra-card" onClick={handleClick}>
+    <div className="obra-card" onClick={handleClick} style={cardStyle}>
       <div className="obra-card-header">
         <h3 className="obra-card-title">{obra.titulo}</h3>
         <div className="obra-card-badges">
           <span
             className="obra-card-esfera"
-            style={{ backgroundColor: esferaColor(obra.esfera) }}
+            style={{ 
+              '--badge-bg': hexToRgba(esferaColor(obra.esfera), 0.15),
+              '--badge-color': esferaColor(obra.esfera) 
+            } as React.CSSProperties}
           >
             {obra.esfera}
           </span>
           <span
             className="obra-card-status"
-            style={{ backgroundColor: statusColor(obra.status) }}
+            style={{ 
+              '--badge-bg': hexToRgba(statusBaseColor, 0.15),
+              '--badge-color': statusBaseColor 
+            } as React.CSSProperties}
           >
             {statusLabel(obra.status)}
           </span>
