@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Layout } from '../components';
-import { 
-  CANAIS_FEDERAIS, 
-  CANAIS_ESTADUAIS, 
-  CIDADES_TO, 
+import {
+  CANAIS_FEDERAIS,
+  CANAIS_ESTADUAIS,
+  CIDADES_TO,
   getCanalMunicipal,
-  type CanalDenuncia 
+  type CanalDenuncia,
 } from '../models';
 import './DenunciasPage.css';
 
@@ -20,8 +20,9 @@ const DenunciasPage: React.FC = () => {
       const municipal = getCanalMunicipal(cidadeSelecionada);
       const mpto: CanalDenuncia = {
         nome: `Ministério Público - Promotoria de ${cidadeSelecionada}`,
-        link: "https://www.mpto.mp.br/ouvidoria/manifestation?tab=manifestation&type=anonymous",
-        descricao: "Canal universal para denúncias anônimas em qualquer município do Tocantins. Use caso o portal da prefeitura esteja indisponível."
+        link: 'https://www.mpto.mp.br/ouvidoria/manifestation?tab=manifestation&type=anonymous',
+        descricao:
+          'Canal universal para denúncias anônimas em qualquer município do Tocantins. Use caso o portal da prefeitura esteja indisponível.',
       };
       return [municipal, mpto];
     }
@@ -31,34 +32,50 @@ const DenunciasPage: React.FC = () => {
   return (
     <Layout>
       <div className="denuncias-page">
-        <div className="denuncias-header">
+        <header className="denuncias-header">
           <div className="header-content">
+            <span className="page-eyebrow">Controle social</span>
             <h1>Canais de Denúncia</h1>
-            <p>Selecione a esfera da obra e encontre o canal oficial para realizar sua manifestação</p>
+            <p>Selecione a esfera da obra e encontre o canal oficial para registrar sua manifestação.</p>
           </div>
-        </div>
+
+          <div className="header-panel">
+            <div className="header-panel-item">
+              <span className="header-panel-label">Esfera</span>
+              <strong>Federal, Estadual ou Municipal</strong>
+            </div>
+            <div className="header-panel-item">
+              <span className="header-panel-label">Destino</span>
+              <strong>Canal oficial da gestão</strong>
+            </div>
+          </div>
+        </header>
 
         <section className="selection-wizard">
           <div className="wizard-card">
-            <h2>Onde a obra está localizada?</h2>
-            <p className="wizard-subtitle">Para direcionar sua denúncia ao órgão de controle correto, selecione a esfera governamental responsável pela obra.</p>
-            
+            <div className="wizard-intro">
+              <h2>Onde a obra está localizada?</h2>
+              <p className="wizard-subtitle">
+                Para direcionar sua denúncia ao órgão correto, selecione a esfera governamental responsável pela obra.
+              </p>
+            </div>
+
             <div className="wizard-controls">
               <div className="wizard-form-group">
                 <label htmlFor="nivel-obra">Esfera Governamental</label>
                 <div className="select-wrapper">
-                  <select 
-                    id="nivel-obra" 
-                    value={nivelObra} 
+                  <select
+                    id="nivel-obra"
+                    value={nivelObra}
                     onChange={(e) => {
                       setNivelObra(e.target.value);
                       setCidadeSelecionada('');
                     }}
                   >
                     <option value="">Selecione a esfera...</option>
-                    <option value="FEDERAL">🏛️ Federal (Obras da União)</option>
-                    <option value="ESTADUAL">🏞️ Estadual (Obras do Tocantins)</option>
-                    <option value="MUNICIPAL">🏘️ Municipal (Prefeituras)</option>
+                    <option value="FEDERAL">Federal (Obras da União)</option>
+                    <option value="ESTADUAL">Estadual (Obras do Tocantins)</option>
+                    <option value="MUNICIPAL">Municipal (Prefeituras)</option>
                   </select>
                 </div>
               </div>
@@ -67,14 +84,16 @@ const DenunciasPage: React.FC = () => {
                 <div className="wizard-form-group animate-in">
                   <label htmlFor="cidade-obra">Cidade do Tocantins</label>
                   <div className="select-wrapper">
-                    <select 
-                      id="cidade-obra" 
-                      value={cidadeSelecionada} 
+                    <select
+                      id="cidade-obra"
+                      value={cidadeSelecionada}
                       onChange={(e) => setCidadeSelecionada(e.target.value)}
                     >
                       <option value="">Selecione a cidade...</option>
-                      {CIDADES_TO.map(cidade => (
-                        <option key={cidade} value={cidade}>{cidade}</option>
+                      {CIDADES_TO.map((cidade) => (
+                        <option key={cidade} value={cidade}>
+                          {cidade}
+                        </option>
                       ))}
                     </select>
                   </div>
@@ -84,7 +103,14 @@ const DenunciasPage: React.FC = () => {
 
             {getCanal().length > 0 && (
               <div className="results-section animate-in">
-                <h3>Canais de Denúncia Oficiais</h3>
+                <div className="results-header">
+                  <h3>Canais de Denúncia Oficiais</h3>
+                  <p>
+                    Abra o portal mais adequado para o seu caso. A opção municipal inclui o portal da prefeitura e,
+                    quando disponível, a promotoria.
+                  </p>
+                </div>
+
                 <div className="canal-cards">
                   {getCanal().map((canal, index) => (
                     <div key={index} className="canal-card-item">
@@ -94,7 +120,8 @@ const DenunciasPage: React.FC = () => {
                         <p>{canal.descricao}</p>
                       </div>
                       <a href={canal.link} target="_blank" rel="noopener noreferrer" className="canal-link-button">
-                        Acessar Canal Oficial ↗
+                        <span>Acessar canal</span>
+                        <span aria-hidden="true">↗</span>
                       </a>
                     </div>
                   ))}
@@ -105,7 +132,10 @@ const DenunciasPage: React.FC = () => {
         </section>
 
         <div className="denuncias-info-footer">
-          <p>As denúncias são ferramentas fundamentais de controle social. Ao utilizar os canais oficiais, você garante que sua manifestação seja apurada pelos órgãos competentes.</p>
+          <p>
+            As denúncias são ferramentas fundamentais de controle social. Ao usar os canais oficiais, sua
+            manifestação segue para o órgão competente com mais rapidez e rastreabilidade.
+          </p>
         </div>
       </div>
     </Layout>
