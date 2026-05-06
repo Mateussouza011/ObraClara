@@ -268,6 +268,39 @@
   margin: 0 auto;
 }
 
+body[data-theme='dark'] .denuncias-page {
+  color: var(--ink);
+}
+
+body[data-theme='dark'] .wizard-card,
+body[data-theme='dark'] .canal-card-item,
+body[data-theme='dark'] .denuncias-info-footer {
+  background: rgba(15, 23, 42, 0.9);
+}
+
+body[data-theme='dark'] .wizard-card h2,
+body[data-theme='dark'] .results-section h3,
+body[data-theme='dark'] .canal-info h4 {
+  color: var(--ink-strong);
+}
+
+body[data-theme='dark'] .wizard-subtitle,
+body[data-theme='dark'] .canal-info p,
+body[data-theme='dark'] .denuncias-info-footer p,
+body[data-theme='dark'] .wizard-form-group label {
+  color: var(--muted);
+}
+
+body[data-theme='dark'] .select-wrapper select {
+  background-color: rgba(15, 23, 42, 0.88);
+  color: #e2e8f0;
+  border-color: rgba(148, 163, 184, 0.2);
+}
+
+body[data-theme='dark'] .select-wrapper select:focus {
+  background-color: rgba(15, 23, 42, 0.96);
+}
+
 @media (max-width: 768px) {
   .denuncias-page {
     padding: 1.5rem;

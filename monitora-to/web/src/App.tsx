@@ -9,8 +9,6 @@ export function App() {
       <Routes>
         <Route path="/" element={<MapPage />} />
         <Route path="/denuncias" element={<DenunciasPage />} />
-
-        {/* Fallback */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
     </BrowserRouter>
