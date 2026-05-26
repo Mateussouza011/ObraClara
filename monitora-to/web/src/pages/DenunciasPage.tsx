@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { Layout } from '../components';
+import { Layout, type TutorialStep } from '../components';
 import {
   CANAIS_FEDERAIS,
   CANAIS_ESTADUAIS,
@@ -9,27 +9,72 @@ import {
 } from '../models';
 import './DenunciasPage.css';
 
+const denunciasTutorialSteps: TutorialStep[] = [
+  {
+    title: 'Canais oficiais',
+    message:
+      'Oi! Nesta tela eu te ajudo a encontrar o canal correto para registrar uma denúncia ou manifestação sobre uma obra.',
+    target: '[data-tutorial="denuncias-header"]',
+  },
+  {
+    title: 'Escolha a esfera da obra',
+    message:
+      'Primeiro informe se a obra é federal, estadual ou municipal. Essa escolha define para qual órgão a manifestação deve seguir.',
+    target: '[data-tutorial="nivel-obra"]',
+  },
+  {
+    title: 'Quando for municipal',
+    message:
+      'Se a obra for municipal, a tela abre a busca de cidade. Assim você encontra o canal da prefeitura certa ou a promotoria de apoio.',
+    target: '[data-tutorial="wizard-card"]',
+  },
+  {
+    title: 'Abra o canal indicado',
+    message:
+      'Depois da seleção, os canais oficiais aparecem abaixo. Use o botão de acesso para abrir o portal em uma nova aba.',
+    target: '[data-tutorial="wizard-card"]',
+  },
+  {
+    title: 'Volte ao mapa quando quiser',
+    message:
+      'O menu Mapa leva você de volta para pesquisar obras, ajustar o raio e conferir os detalhes no portal oficial.',
+    target: '[data-tutorial="nav-map"]',
+  },
+];
+
 const DenunciasPage: React.FC = () => {
   const [nivelObra, setNivelObra] = useState<string>('');
   const [cidadeSelecionada, setCidadeSelecionada] = useState<string>('');
   const [buscaCidade, setBuscaCidade] = useState<string>('');
 
   const cidadesFiltradas = useMemo(() => {
-    const termo = buscaCidade.trim().toLowerCase();
+    const termo = normalizarCidade(buscaCidade);
     if (!termo) return CIDADES_TO;
 
     return CIDADES_TO.filter((cidade) =>
-      cidade
-        .toLowerCase()
-        .normalize('NFD')
-        .replace(/[\u0300-\u036f]/g, '')
-        .includes(
-          termo
-            .normalize('NFD')
-            .replace(/[\u0300-\u036f]/g, '')
-        )
+      normalizarCidade(cidade).includes(termo)
     );
   }, [buscaCidade]);
+
+  const handleBuscaCidadeChange = (value: string) => {
+    setBuscaCidade(value);
+
+    const termo = normalizarCidade(value);
+    if (!termo) {
+      setCidadeSelecionada('');
+      return;
+    }
+
+    const cidadeExata = CIDADES_TO.find((cidade) => normalizarCidade(cidade) === termo);
+    if (cidadeExata) {
+      setCidadeSelecionada(cidadeExata);
+      return;
+    }
+
+    if (cidadeSelecionada && !normalizarCidade(cidadeSelecionada).includes(termo)) {
+      setCidadeSelecionada('');
+    }
+  };
 
   const getCanal = (): CanalDenuncia[] => {
     if (nivelObra === 'FEDERAL') return CANAIS_FEDERAIS;
@@ -48,9 +93,12 @@ const DenunciasPage: React.FC = () => {
   };
 
   return (
-    <Layout>
+    <Layout
+      tutorialSteps={denunciasTutorialSteps}
+      tutorialStorageKey="monitora-denuncias-tutorial-v1"
+    >
       <div className="denuncias-page">
-        <header className="denuncias-header">
+        <header className="denuncias-header" data-tutorial="denuncias-header">
           <div className="header-content">
             <span className="page-eyebrow">Controle social</span>
             <h1>Canais de Denúncia</h1>
@@ -70,7 +118,7 @@ const DenunciasPage: React.FC = () => {
         </header>
 
         <section className="selection-wizard">
-          <div className="wizard-card">
+          <div className="wizard-card" data-tutorial="wizard-card">
             <div className="wizard-intro">
               <h2>Onde a obra está localizada?</h2>
               <p className="wizard-subtitle">
@@ -84,6 +132,7 @@ const DenunciasPage: React.FC = () => {
                 <div className="select-wrapper">
                   <select
                     id="nivel-obra"
+                    data-tutorial="nivel-obra"
                     value={nivelObra}
                     onChange={(e) => {
                       setNivelObra(e.target.value);
@@ -106,7 +155,7 @@ const DenunciasPage: React.FC = () => {
                     className="cidade-search-input"
                     placeholder="Buscar cidade..."
                     value={buscaCidade}
-                    onChange={(e) => setBuscaCidade(e.target.value)}
+                    onChange={(e) => handleBuscaCidadeChange(e.target.value)}
                   />
                   <div className="select-wrapper">
                     <select
@@ -172,3 +221,11 @@ const DenunciasPage: React.FC = () => {
 };
 
 export default DenunciasPage;
+
+function normalizarCidade(value: string): string {
+  return value
+    .trim()
+    .toLowerCase()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '');
+}

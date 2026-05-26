@@ -61,7 +61,7 @@ function getRefinedPosition(initialBest: GeolocationPosition): Promise<Geolocati
   });
 }
 
-export function useObraViewModel() {
+export function useObraViewModel(raioConsultaKm?: number) {
   const apiClient = APIClient.getInstance();
   const [obras, setObras] = useState<Obra[]>([]);
   const [loading, setLoading] = useState(false);
@@ -72,6 +72,7 @@ export function useObraViewModel() {
   } | null>(null);
   const [precisaoMetros, setPrecisaoMetros] = useState<number | null>(null);
   const [raioFiltro, setRaioFiltro] = useState(2);
+  const raioBuscaKm = raioConsultaKm ?? raioFiltro;
 
   // Obter localização do usuário
   useEffect(() => {
@@ -87,7 +88,7 @@ export function useObraViewModel() {
     }, 500);
 
     return () => clearTimeout(timer);
-  }, [localizacao, raioFiltro]);
+  }, [localizacao, raioBuscaKm]);
 
   const obterLocalizacao = useCallback(async () => {
     try {
@@ -159,7 +160,7 @@ export function useObraViewModel() {
       const obrasNaProximidade = await apiClient.listarObrasProximas(
         localizacao.latitude,
         localizacao.longitude,
-        raioFiltro
+        raioBuscaKm
       );
 
       // Adicionar distância calculada para cada obra
@@ -181,7 +182,7 @@ export function useObraViewModel() {
     } finally {
       setLoading(false);
     }
-  }, [localizacao, raioFiltro]);
+  }, [localizacao, raioBuscaKm]);
 
   const filtrarPorStatus = useCallback(
     (status: string) => {

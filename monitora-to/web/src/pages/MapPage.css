@@ -103,6 +103,23 @@
   color: var(--ink-strong);
 }
 
+.city-filter-select {
+  appearance: none;
+  cursor: pointer;
+  min-height: 2.4rem;
+}
+
+.sidebar-search:has(.city-filter-select)::after {
+  content: '▼';
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--muted);
+  font-size: 0.72rem;
+  pointer-events: none;
+}
+
 body[data-theme='dark'] .sidebar,
 body[data-theme='dark'] .filter-bar {
   background: rgba(15, 23, 42, 0.9);
