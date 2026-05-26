@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState, type CSSProperties } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import './InteractiveTutorial.css';
 
 export interface TutorialStep {
@@ -23,8 +23,6 @@ interface TargetRect {
 type TutorialPhase = 'hidden' | 'invite' | 'tour';
 
 const GUIDE_IMAGE_SRC = '/tutorial-guide.png';
-const PANEL_WIDTH = 390;
-const PANEL_GAP = 18;
 const SPOTLIGHT_PADDING = 8;
 
 export function InteractiveTutorial({
@@ -35,7 +33,6 @@ export function InteractiveTutorial({
   const [phase, setPhase] = useState<TutorialPhase>('hidden');
   const [currentStep, setCurrentStep] = useState(0);
   const [targetRect, setTargetRect] = useState<TargetRect | null>(null);
-  const [isCompact, setIsCompact] = useState(false);
 
   const activeStep = phase === 'tour' ? steps[currentStep] : null;
   const isLastStep = currentStep === steps.length - 1;
@@ -61,17 +58,6 @@ export function InteractiveTutorial({
       setPhase('tour');
     }
   }, [restartSignal, steps.length]);
-
-  useEffect(() => {
-    const updateCompactMode = () => {
-      setIsCompact(window.innerWidth <= 760);
-    };
-
-    updateCompactMode();
-    window.addEventListener('resize', updateCompactMode);
-
-    return () => window.removeEventListener('resize', updateCompactMode);
-  }, []);
 
   useEffect(() => {
     if (!activeStep?.target) {
@@ -123,29 +109,6 @@ export function InteractiveTutorial({
 
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [phase]);
-
-  const panelStyle = useMemo<CSSProperties | undefined>(() => {
-    if (!targetRect || isCompact) {
-      return undefined;
-    }
-
-    const viewportWidth = window.innerWidth;
-    const viewportHeight = window.innerHeight;
-    const fitsOnRight = targetRect.left + targetRect.width + PANEL_WIDTH + PANEL_GAP < viewportWidth;
-    const left = fitsOnRight
-      ? targetRect.left + targetRect.width + PANEL_GAP
-      : Math.max(PANEL_GAP, targetRect.left - PANEL_WIDTH - PANEL_GAP);
-    const maxTop = Math.max(PANEL_GAP, viewportHeight - 360);
-    const top = Math.min(
-      Math.max(PANEL_GAP, targetRect.top + targetRect.height / 2 - 160),
-      maxTop
-    );
-
-    return {
-      left,
-      top,
-    };
-  }, [isCompact, targetRect]);
 
   const interactiveRect = useMemo(() => {
     if (!targetRect) {
@@ -317,7 +280,6 @@ export function InteractiveTutorial({
 
       <section
         className="tutorial-card"
-        style={panelStyle}
         role="dialog"
         aria-modal="true"
         aria-labelledby="tutorial-step-title"

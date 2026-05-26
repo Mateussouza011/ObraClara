@@ -104,17 +104,6 @@ const DenunciasPage: React.FC = () => {
             <h1>Canais de Denúncia</h1>
             <p>Selecione a esfera da obra e encontre o canal oficial para registrar sua manifestação.</p>
           </div>
-
-          <div className="header-panel">
-            <div className="header-panel-item">
-              <span className="header-panel-label">Esfera</span>
-              <strong>Federal, Estadual ou Municipal</strong>
-            </div>
-            <div className="header-panel-item">
-              <span className="header-panel-label">Destino</span>
-              <strong>Canal oficial da gestão</strong>
-            </div>
-          </div>
         </header>
 
         <section className="selection-wizard">

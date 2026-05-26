@@ -5,10 +5,6 @@
 }
 
 .denuncias-header {
-  display: grid;
-  grid-template-columns: minmax(0, 1.4fr) minmax(280px, 0.8fr);
-  gap: 1.5rem;
-  align-items: stretch;
   margin-bottom: 1.75rem;
 }
 
@@ -45,37 +41,6 @@
   font-size: 1.05rem;
   line-height: 1.55;
   max-width: 62ch;
-}
-
-.header-panel {
-  display: grid;
-  gap: 0.75rem;
-  align-content: stretch;
-}
-
-.header-panel-item {
-  background: rgba(234, 241, 248, 0.92);
-  border: 1px solid rgba(148, 163, 184, 0.18);
-  border-radius: var(--radius-md);
-  padding: 1rem 1.15rem;
-  box-shadow: var(--shadow-sm);
-}
-
-.header-panel-label {
-  display: block;
-  margin-bottom: 0.35rem;
-  font-size: 0.72rem;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--muted);
-}
-
-.header-panel-item strong {
-  display: block;
-  color: var(--ink-strong);
-  font-size: 1rem;
-  line-height: 1.35;
 }
 
 .selection-wizard {
@@ -369,7 +334,6 @@ body[data-theme='dark'] .denuncias-page {
   color: var(--ink);
 }
 
-body[data-theme='dark'] .header-panel-item,
 body[data-theme='dark'] .wizard-card,
 body[data-theme='dark'] .canal-card-item,
 body[data-theme='dark'] .denuncias-info-footer {
@@ -407,7 +371,6 @@ body[data-theme='dark'] .select-wrapper select:focus {
 }
 
 body[data-theme='dark'] .results-header h3,
-body[data-theme='dark'] .header-panel-item strong,
 body[data-theme='dark'] .wizard-card h2,
 body[data-theme='dark'] .canal-info h4 {
   color: #f8fafc;
@@ -418,8 +381,7 @@ body[data-theme='dark'] .results-header p,
 body[data-theme='dark'] .wizard-subtitle,
 body[data-theme='dark'] .canal-info p,
 body[data-theme='dark'] .denuncias-info-footer p,
-body[data-theme='dark'] .wizard-form-group label,
-body[data-theme='dark'] .header-panel-label {
+body[data-theme='dark'] .wizard-form-group label {
   color: #94a3b8;
 }
 
@@ -435,11 +397,6 @@ body[data-theme='dark'] .canal-link-button {
 @media (max-width: 768px) {
   .denuncias-page {
     padding: 1.25rem;
-  }
-
-  .denuncias-header {
-    grid-template-columns: 1fr;
-    margin-bottom: 1.25rem;
   }
 
   .header-content h1 {
