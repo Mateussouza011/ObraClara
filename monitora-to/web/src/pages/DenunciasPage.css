@@ -1,7 +1,12 @@
 .denuncias-page {
+  flex: 1 1 auto;
+  width: 100%;
+  min-height: 0;
   padding: 2rem;
   max-width: 1240px;
   margin: 0 auto;
+  overflow-y: auto;
+  overscroll-behavior: contain;
 }
 
 .denuncias-header {

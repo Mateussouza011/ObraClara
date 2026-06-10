@@ -95,6 +95,22 @@ function mapObraFromDTO(dto: ObraResponseDTO): Obra {
   };
 }
 
+function mapAxiosError(error: AxiosError<ApiResponse<any>>): Error | AxiosError<ApiResponse<any>> {
+  const apiMessage = error.response?.data?.error || error.response?.data?.message;
+
+  if (apiMessage) {
+    return new Error(apiMessage);
+  }
+
+  if (!error.response) {
+    return new Error(
+      `Nao foi possivel conectar a API em ${API_BASE_URL}. Verifique se o backend esta rodando e se VITE_API_URL aponta para a porta correta.`
+    );
+  }
+
+  return error;
+}
+
 class APIClient {
   private client: AxiosInstance;
   private static instance: APIClient;
@@ -116,7 +132,7 @@ class APIClient {
     // Response Interceptor
     this.client.interceptors.response.use(
       (response: AxiosResponse) => response,
-      (error: AxiosError<ApiResponse<any>>) => Promise.reject(error)
+      (error: AxiosError<ApiResponse<any>>) => Promise.reject(mapAxiosError(error))
     );
   }
 
